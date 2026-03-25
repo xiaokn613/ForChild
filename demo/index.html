@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宠物家园 - 首页</title>
+  <style>
+    :root {
+      --bg-page: #fdfcf4;
+      --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+      --gold: #fbc02d;
+      --card-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      --text-main: #333;
+      --text-sub: #999;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+
+    body {
+      background-color: var(--bg-page);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* iPad 容器 */
+    .home-container {
+      width: 100%;
+      max-width: 1024px;
+      background: white;
+      border-radius: 40px;
+      min-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    }
+
+    /* 顶部导航 */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 25px 35px;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 15px; }
+    .avatar-circle { width: 45px; height: 45px; background: #eee; border-radius: 50%; }
+
+    .stars-display {
+      background: #fff9e6;
+      color: var(--gold);
+      padding: 8px 18px;
+      border-radius: 25px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(251, 192, 45, 0.1);
+    }
+
+    /* 主内容布局 */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 25px;
+      padding: 0 35px 35px;
+    }
+
+    /* 欢迎横幅 */
+    .welcome-banner {
+      background: var(--primary-gradient);
+      border-radius: 30px;
+      padding: 40px;
+      color: white;
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .welcome-banner h1 { font-size: 28px; margin-bottom: 10px; }
+    .welcome-banner p { opacity: 0.9; font-size: 14px; }
+
+    /* 荣誉墙入口 */
+    .honor-card {
+      background: #fff;
+      border: 2px dashed #e0e0e0;
+      border-radius: 25px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .honor-card:hover { border-color: var(--primary-gradient); background: #f0fdf9; }
+
+    /* 任务列表 */
+    .section-box {
+      background: #fff;
+      border-radius: 30px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      padding: 15px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .check-box {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      margin-right: 15px;
+    }
+    .task-info h4 { font-size: 15px; margin-bottom: 2px; }
+    .task-info p { font-size: 12px; color: var(--text-sub); }
+    .task-reward { margin-left: auto; color: var(--gold); font-size: 13px; font-weight: bold; }
+
+    /* 愿望单 */
+    .wish-item {
+      margin-bottom: 20px;
+    }
+    .wish-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    .wish-progress-bg {
+      height: 12px;
+      background: #f0f0f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .wish-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffca28, #ff7043);
+      border-radius: 10px;
+    }
+
+    @media (max-width: 850px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="home-container">
+  <nav class="top-nav">
+    <div class="user-info">
+      <div class="avatar-circle"></div>
+      <div>
+        <div style="font-weight: bold;">早上好，小明</div>
+        <div style="font-size: 12px; color: var(--text-sub);">今天也要和宠物开心度过哦</div>
+      </div>
+    </div>
+    <div class="stars-display">⭐ 4347 星星</div>
+  </nav>
+
+  <div class="main-layout">
+    <div class="content-left">
+      <section class="welcome-banner">
+        <h1>欢迎回来！</h1>
+        <p>你的哈士奇已经等你好久了，快去看看它吧。</p>
+        <div style="position:absolute; right:40px; bottom:20px; font-size:60px; opacity:0.3;">🐾</div>
+      </section>
+
+      <div class="section-box">
+        <div class="section-header">
+          <span>📅 每日任务</span>
+          <span style="color: #48c69d; font-size: 13px;">全部完成可领大奖</span>
+        </div>
+
+        <div class="task-item">
+          <div class="check-box"></div>
+          <div class="task-info">
+            <h4>给宠物喂食一次</h4>
+            <p>提升宠物饱腹感</p>
+          </div>
+          <div class="task-reward">+10 星星</div>
+        </div>
+
+        <div class="task-item">
+          <div class="check-box" style="background: #48c69d; border-color: #48c69d;"></div>
+          <div class="task-info">
+            <h4 style="text-decoration: line-through; color: #ccc;">带宠物去公园散步</h4>
+            <p>提升宠物心情值</p>
+          </div>
+          <div class="task-reward" style="color: #ccc;">已领取</div>
+        </div>
+
+        <div class="task-item">
+          <div class="check-box"></div>
+          <div class="task-info">
+            <h4>完成一次洗香香</h4>
+            <p>保持宠物清洁</p>
+          </div>
+          <div class="task-reward">+15 星星</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-right">
+      <div class="honor-card" style="margin-bottom: 25px;">
+        <div style="font-size: 24px;">🏆</div>
+        <div>
+          <div style="font-weight: bold; font-size: 15px;">荣誉墙</div>
+          <div style="font-size: 12px; color: var(--text-sub);">查看你获得的勋章</div>
+        </div>
+        <div style="margin-left: auto; color: #ccc;">></div>
+      </div>
+
+      <div class="section-box">
+        <div class="section-header">
+          <span>🎁 愿望单进度</span>
+        </div>
+
+        <div class="wish-item">
+          <div class="wish-top">
+            <span>高级宠物屋</span>
+            <span style="color: var(--gold);">60%</span>
+          </div>
+          <div class="wish-progress-bg">
+            <div class="wish-progress-fill" style="width: 60%;"></div>
+          </div>
+          <p style="font-size: 11px; color: #999; margin-top: 5px;">还差 400 星星解锁</p>
+        </div>
+
+        <div class="wish-item">
+          <div class="wish-top">
+            <span>自动喂食机</span>
+            <span style="color: var(--gold);">25%</span>
+          </div>
+          <div class="wish-progress-bg">
+            <div class="wish-progress-fill" style="width: 25%;"></div>
+          </div>
+          <p style="font-size: 11px; color: #999; margin-top: 5px;">还差 1500 星星解锁</p>
+        </div>
+
+        <div class="wish-item">
+          <div class="wish-top">
+            <span>神秘宠物蛋</span>
+            <span style="color: var(--gold);">90%</span>
+          </div>
+          <div class="wish-progress-bg">
+            <div class="wish-progress-fill" style="width: 90%;"></div>
+          </div>
+          <p style="font-size: 11px; color: #999; margin-top: 5px;">加油！马上就要实现了</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

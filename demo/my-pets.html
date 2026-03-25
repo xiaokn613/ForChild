@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宠物详情 - 电子宠物</title>
+  <style>
+    :root {
+      --bg-page: #f9f9f9;
+      --bg-card: #ffffff;
+      --primary-blue: #3dd2f3;
+      --accent-orange: #ffa726;
+      --accent-blue: #42a5f5;
+      --accent-green: #66bb6a;
+      --accent-purple: #9575cd;
+      --text-main: #333;
+      --text-sub: #999;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+
+    body {
+      background-color: #f2f2f2;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* iPad 容器适配 */
+    .app-container {
+      width: 100%;
+      max-width: 1024px; /* iPad 典型宽度 */
+      background: white;
+      border-radius: 40px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    }
+
+    /* 顶部栏 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 30px;
+    }
+
+    .points-badge {
+      background: #fff9e6;
+      color: #d4a017;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    /* 主内容区：左右布局 */
+    .main-content {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+      padding: 0 30px 30px;
+    }
+
+    /* --- 左侧区域 --- */
+    .pet-stage {
+      background: var(--primary-blue);
+      border-radius: 30px;
+      padding: 30px;
+      color: white;
+      text-align: center;
+      position: relative;
+    }
+
+    .pet-avatar-box {
+      width: 200px;
+      height: 200px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 25px;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 状态条组 */
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .status-item {
+      background: white;
+      padding: 15px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      margin: 8px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #ffc107;
+      width: 80%;
+    }
+
+    /* 动作按钮网格 */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .action-card {
+      padding: 20px;
+      border-radius: 25px;
+      color: white;
+      position: relative;
+      text-align: left;
+    }
+
+    .action-card.orange { background: var(--accent-orange); }
+    .action-card.blue { background: var(--accent-blue); }
+    .action-card.green { background: var(--accent-green); }
+    .action-card.purple { background: var(--accent-purple); }
+
+    .cost-tag {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255,255,255,0.3);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+
+    /* --- 右侧区域 --- */
+    .sidebar-section {
+      background: #fdfdfd;
+      border-radius: 30px;
+      padding: 25px;
+      border: 1px solid #f0f0f0;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .level-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .level-item {
+      padding: 15px;
+      border-radius: 15px;
+      background: #f0fdf9;
+      border: 1px solid #e0f2f1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pet-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 15px;
+      border: 1px solid #f5f5f5;
+      margin-bottom: 10px;
+    }
+
+    .small-avatar {
+      width: 50px;
+      height: 50px;
+      background: #eee;
+      border-radius: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .main-content { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header class="header">
+    <div style="display:flex; align-items:center; gap:15px;">
+      <span style="font-size: 24px;">←</span>
+      <div>
+        <h2 style="font-size: 18px;">电子宠物</h2>
+        <p style="font-size: 12px; color: #999;">用星星积分照顾你的陪伴伙伴</p>
+      </div>
+    </div>
+    <div class="points-badge">⭐ 4347 星星</div>
+  </header>
+
+  <div class="main-content">
+    <div class="left-column">
+      <div class="pet-stage">
+        <div style="text-align: left;">
+          <span style="font-size: 12px; opacity: 0.8;">Lv.1 亲密伙伴</span>
+          <h2 style="font-size: 28px;">哈士奇</h2>
+        </div>
+        <div class="pet-avatar-box">宠物图片占位</div>
+        <p style="font-size: 14px; opacity: 0.9;">今天也想和你一起冲向公园</p>
+        <div style="position:absolute; top:30px; right:30px; background:rgba(255,255,255,0.3); padding:5px 15px; border-radius:15px; font-size:12px;">哈士奇</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-item">
+          <span style="font-size: 12px; font-weight: bold;">🍴 饱腹 80/100</span>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <span style="font-size: 11px; color: #999;">吃得饱饱的</span>
+        </div>
+        <div class="status-item">
+          <span style="font-size: 12px; font-weight: bold;">🛀 清洁 80/100</span>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <span style="font-size: 11px; color: #999;">干净又清爽</span>
+        </div>
+        <div class="status-item">
+          <span style="font-size: 12px; font-weight: bold;">😊 心情 80/100</span>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+          <span style="font-size: 11px; color: #999;">今天超开心</span>
+        </div>
+      </div>
+
+      <div class="action-grid">
+        <div class="action-card orange">
+          <span class="cost-tag">-10 星星</span>
+          <h4>喂食</h4>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 5px;">轻轻点一下，就能让它更开心。</p>
+        </div>
+        <div class="action-card blue">
+          <span class="cost-tag">-15 星星</span>
+          <h4>洗香香</h4>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 5px;">轻轻点一下，就能让它更开心。</p>
+        </div>
+        <div class="action-card green">
+          <span class="cost-tag">-20 星星</span>
+          <h4>去公园</h4>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 5px;">轻轻点一下，就能让它更开心。</p>
+        </div>
+        <div class="action-card purple">
+          <span class="cost-tag">-8 星星</span>
+          <h4>睡觉</h4>
+          <p style="font-size: 11px; opacity: 0.8; margin-top: 5px;">安安稳稳睡一觉，醒来更有精神。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="right-column">
+      <div class="sidebar-section">
+        <h3 class="section-title">♡ 成长进度</h3>
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 32px; font-weight: bold;">0</div>
+          <div style="font-size: 12px; color: #999;">当前亲密度</div>
+        </div>
+        <div class="level-list">
+          <div class="level-item">
+            <div>
+              <div style="font-weight: bold; font-size: 14px;">Lv.1 刚认识</div>
+              <div style="font-size: 11px; color: #888;">解锁基础陪伴文案</div>
+            </div>
+            <span style="font-size: 12px; color: #ccc;">0+</span>
+          </div>
+          <div class="level-item" style="background: white; border-color: #eee;">
+            <div>
+              <div style="font-weight: bold; font-size: 14px; color: #555;">Lv.2 好朋友</div>
+              <div style="font-size: 11px; color: #aaa;">解锁更多互动反馈</div>
+            </div>
+            <span style="font-size: 12px; color: #ccc;">50+</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="section-title">🪄 更换宠物</h3>
+        <div class="pet-list-item">
+          <div class="small-avatar"></div>
+          <div style="flex: 1;">
+            <div style="font-size: 14px; font-weight: bold;">泰迪</div>
+            <div style="font-size: 11px; color: #999;">卷卷毛茸茸...</div>
+          </div>
+          <div style="font-size: 11px; color: #d4a017;">-100 星星</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电子宠物领养</title>
+    <style>
+        :root {
+            --bg-color: #fdfcf4;
+            --primary-gradient: linear-gradient(90deg, #37b9e9, #48c69d);
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #888888;
+            --accent-color: #ffeb3b;
+            --btn-color: #26c6da;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 适配 iPad 的主容器 */
+        .container {
+            width: 100%;
+            max-width: 800px; /* 针对 iPad 优化的宽度 */
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-icon {
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .title-group h1 {
+            font-size: 18px;
+            color: var(--text-main);
+        }
+
+        .title-group p {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .points-badge {
+            background-color: #fff9c4;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fbc02d;
+        }
+
+        /* 顶部横幅 */
+        .banner {
+            margin: 0 20px 20px;
+            padding: 30px 25px;
+            background: var(--primary-gradient);
+            border-radius: 20px;
+            color: white;
+        }
+
+        .banner-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .banner h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .banner p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* 宠物列表网格 */
+        .pet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px 30px;
+        }
+
+        .pet-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* 图片占位块 */
+        .image-placeholder {
+            width: 120px;
+            height: 120px;
+            background-color: #f5f5f5;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .pet-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .pet-desc {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price-tag {
+            background-color: #fff9c4;
+            color: #fbc02d;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .adopt-btn {
+            background-color: var(--btn-color);
+            color: white;
+            padding: 6px 18px;
+            border-radius: 15px;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* iPad 竖屏适配微调 */
+        @media (max-width: 600px) {
+            .pet-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="header">
+        <div class="header-left">
+            <span class="back-icon">←</span>
+            <div class="title-group">
+                <h1>电子宠物</h1>
+                <p>用星星积分照顾你的陪伴伙伴</p>
+            </div>
+        </div>
+        <div class="points-badge">⭐ 10000 星星</div>
+    </header>
+
+    <section class="banner">
+        <span class="banner-tag">轻松陪伴型</span>
+        <h2>领养一只属于你的电子宠物</h2>
+        <p>用星星积分换取一个需要你照顾的小伙伴。喂食、洗香香、去公园，都会让它越来越喜欢你。</p>
+    </section>
+
+    <main class="pet-grid">
+        <article class="pet-card">
+            <div class="image-placeholder">图片占位</div>
+            <h3 class="pet-name">泰迪</h3>
+            <p class="pet-desc">卷卷毛茸茸，黏人又活泼。</p>
+            <div class="card-footer">
+                <span class="price-tag">100 星星领养</span>
+                <div class="adopt-btn">领养</div>
+            </div>
+        </article>
+
+        <article class="pet-card">
+            <div class="image-placeholder">图片占位</div>
+            <h3 class="pet-name">比熊</h3>
+            <p class="pet-desc">软绵绵的小云朵，笑起来超治愈。</p>
+            <div class="card-footer">
+                <span class="price-tag">100 星星领养</span>
+                <div class="adopt-btn">领养</div>
+            </div>
+        </article>
+
+        <article class="pet-card">
+            <div class="image-placeholder">图片占位</div>
+            <h3 class="pet-name">哈士奇</h3>
+            <p class="pet-desc">精力满满，陪你一起疯玩。</p>
+            <div class="card-footer">
+                <span class="price-tag">100 星星领养</span>
+                <div class="adopt-btn">领养</div>
+            </div>
+        </article>
+
+        <article class="pet-card">
+            <div class="image-placeholder">图片占位</div>
+            <h3 class="pet-name">柯基犬</h3>
+            <p class="pet-desc">小短腿冲过来的时候，谁都会被可爱到。</p>
+            <div class="card-footer">
+                <span class="price-tag">100 星星领养</span>
+                <div class="adopt-btn">领养</div>
+            </div>
+        </article>
+    </main>
+</div>
+
+</body>
+</html>
