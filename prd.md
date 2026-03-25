@@ -2,28 +2,30 @@
 本项目旨在开发一个面向儿童的、高互动性的 Web 网站平台，结合用户提供的界面风格（简洁、可爱、现代UI），通过以下方式提升儿童的参与度：
 - 高关联性虚拟宠物： 宠物状态与儿童行为挂钩。
 - 多层次奖励兑换： 建立从日常到长期目标的阶梯式荣誉感。
+- 重要提醒：该平台的设备需在家长的监护下运行，所有的任务完成、奖励领取是免去审核的，建议在家长的陪同下与系统交互。
 
 ## 2.用户角色
 - **儿童 (Child User)**: 核心用户。领养宠物，完成任务打卡，领取和消耗星星积分，收集徽章和奖杯。
 - **家长 (Parent User)**: 辅助和监督角色。设定任务内容、积分分值、长期目标及对应徽章/奖杯，审核特殊任务，查看统计报表。
 
 ## 3.虚拟货币
-- **星星**：日常习惯按时完成的奖励。
-- **徽章**：用于奖励长期的行为习惯。
-- **奖杯**：用途奖励达成预设目标的行为。
+星星、徽章、奖杯之间暂时不设置兑换关系，不同的积分类型用于购买专属商品。
+- **星星**：日常习惯按时完成的奖励，可用于商场内购物或宠物状态提升。
+- **徽章**：用于奖励长期的行为习惯，可用于解锁奖励形式，解锁后可用星星购买。非自动完成获取，通过精美的动画强化获得感。
+- **奖杯**：用途奖励达成预设目标的行为，达成后可以获得而外的星星奖励。非自动完成获取，通过精美的动画强化获得感。
 
 ## 4.界面端
 - **儿童端**：登录、注册、领养宠物、任务打卡、积分兑换等。
-- **家长端**：登录、注册、商城管理、宠物管理、设定任务内容、积分分值、目标设定、审核特殊任务、查看统计报表等。
+- **家长端**：登录、注册、商城管理、宠物管理、设定任务内容、积分分值、目标设定、查看统计报表等。
 
 ## 5.任务体系
 - **日常任务**： 通过家长端设定日常任务，在规定或无规定时间打卡并完成，获取对应奖励（家长端设置的任务内容、奖励内容）。
-- **宠物任务**： 通过家长端设定宠物发出的临时任务，在规定时间完成，获取对应奖励（家长端设置的任务内容、奖励内容）。
+- **宠物任务**： 预设好条件自动发布的（例如：当宠物“饱腹度”低于 20 时，系统自动发布一个“给宠物找食物”的学习任务），在规定时间完成，获取对应奖励（家长端设置的任务内容、奖励内容）。
 - **自定义任务**： 通过家长端设定一次性的自定义任务，在特殊时间段内完成，获取对应奖励（家长端设置的任务内容、奖励内容）。
-- **强化任务**： 通过家长端设定强化任务，通过选择已完成的任务，设定特定的时间后提醒自动重复创建任务。
-- **愿望单**： 通过家长端设定愿望单，可分为兑换愿望和进度愿望
+- **强化任务**： 通过家长端设定强化任务，一个“复习机制”通过选择已完成的任务，设定特定的时间后提醒自动重复创建任务，孩子今天学会了 5 个单词，家长将其设为强化任务，系统会在 3 天或 7 天后自动重新生成一个同样内容的复习打卡任务。
+- **愿望单**： 通过家长端设定孩子的愿望单，可分为兑换愿望和进度愿望
   - 兑换愿望：家长设置愿望所消耗的货币，用户可消耗货币兑换物品。
-  - 进度愿望：家长设置愿望的进度内容，用户可以通过完成进度，可获得奖励。
+  - 进度愿望：家长设置愿望的进度内容，用户可以通过完成进度，可获得奖励。（孩子许愿想去游乐园，设定一个愿望“去游乐园”，目标是背诵20首古诗，孩子完成20首古诗背诵后，孩子就可以去游乐园了）
 
 
 ## 6.功能模块规划
@@ -37,15 +39,26 @@
 - 功能：展示当前已领养的宠物信息。
 - 基本信息： 宠物名字、等级、等级描述。
 - 宠物状态： “饱腹”、“清洁”、“心情”三项数值（如80/100）。这些数值会随时间缓慢下降。
-- 互动操作： 喂食 (-10星), 洗香香 (-15星), 去公园 (-20星), 睡觉 (-8星)。这些操作将消耗星星积分，提升宠物对应的状态值。
+  - 宠物饱腹：宠物饱腹度归0时，宠物进入休眠状态，需要通过手动设置特殊任务获得“复活水”，将宠物饱腹数值到60。
+  - 宠物清洁：宠物清洁度归0时，宠物进入肮脏状态，需要通过手动设置特殊任务获得“清洁泡泡”，将宠物清洁度到60。
+  - 宠物心情：宠物心情归0时，宠物进入失落状态，需要通过手动设置特殊任务获得“开心果”，将宠物心情到60。
+- 互动操作： 喂食 (-10星), 洗香香 (-15星), 去公园 (-20星), 睡觉 (-8星)。这些操作将消耗星星积分（后台可配置），提升宠物对应的状态值（后台可配置）。
 - 状态反馈： 根据状态数值，宠物会展示不同的动画和描述语（如“今天也想和你一起冲向公园”）。
 - 任务发布： 宠物会发布任务，用户可完成任务，并获取星星积分。
+- 宠物升级： 宠物升级条件，宠物根据宠物任务的完成情况，升级宠物等级。
+  - 宠物L1 新朋友：解锁基础文案
+  - 宠物L2 好朋友：解锁互动动图
+  - 宠物L3 贴心伙伴：解锁任务更多表情和背景
+  - 宠物L4 最好的朋友：解锁首页常驻宠物，宠物满级之后不再消耗状态值。不再发布任务，可获得对应的一个宠物宝宝（PENDING）
 
 ### 6.2 模块二：任务模块
 #### 6.2.1 积分任务模块
 #### 6.2.2 徽章任务模块
+- 功能：展示所有可获取的徽章。有一个非常精美的徽章展示墙。
 #### 6.2.3 奖杯任务模块
+- 功能：展示所有可获取的奖杯。有一个非常精美的奖杯展示墙。
 #### 6.2.4 愿望单模块
+#### 6.2.5 荣誉墙模块
 
 ### 6.3 模块三：商城模块
 #### 6.3.1 虚拟物品
@@ -55,4 +68,160 @@
 #### 6.3.2 实体物品
 - 功能：展示所有可购买的实体物品。
   - 登记商品：可上传图片，填写商品信息，并设置价格。
-  - 购买商品：可购买商品，并支付。
+  - 购买商品：可使用奖励的虚拟货币购买商品，并支付（不需要确认线下已发放，本系统需要家长开启给孩子使用，家长可在兑换记录中查看，家长管理端也推送一个强提醒需要履行兑换）。
+
+### 6.4 模块四：统计分析模块
+- 功能：展示所有用户行为数据。
+- 奖励获取历史：展示用户获取的星星积分、徽章、奖杯。
+- 宠物状态历史：展示用户领养的宠物的状态变化。
+- 任务历史: 展示用户任务的互动情况。
+
+### 6.5 模块五：任务排程表
+- 功能：展示近期的任务计划。
+
+### 7 库表结构
+1. 用户与关系模块 (User & Relation)
+```sql
+-- 用户表
+   CREATE TABLE users (
+   user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+   username TEXT NOT NULL,
+   role TEXT CHECK(role IN ('PARENT', 'CHILD')), -- 家长或儿童
+   avatar_url TEXT,
+   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+   );
+
+-- 用户关系表 (1个家长可对应多个孩子)
+CREATE TABLE user_relations (
+parent_id INTEGER,
+child_id INTEGER,
+FOREIGN KEY (parent_id) REFERENCES users(user_id),
+FOREIGN KEY (child_id) REFERENCES users(user_id),
+PRIMARY KEY (parent_id, child_id)
+);
+
+-- 钱包表 (存储三种虚拟货币)
+CREATE TABLE wallets (
+user_id INTEGER PRIMARY KEY,
+star_count INTEGER DEFAULT 0,    -- 星星：日常消耗
+badge_count INTEGER DEFAULT 0,   -- 徽章：权限解锁
+trophy_count INTEGER DEFAULT 0,  -- 奖杯：目标成就
+FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+```
+2. 宠物养成模块 (Pet System)
+```sql
+-- 宠物基础信息
+CREATE TABLE pets (
+    pet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_id INTEGER,
+    pet_type TEXT,          -- 种类：如 'HUSKY', 'TEDDY'
+    nickname TEXT,
+    level INTEGER DEFAULT 1 CHECK(level <= 4),
+    exp INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(user_id)
+);
+
+-- 宠物实时状态
+CREATE TABLE pet_status (
+    pet_id INTEGER PRIMARY KEY,
+    satiety REAL DEFAULT 100,      -- 饱腹度 (0-100)
+    hygiene REAL DEFAULT 100,      -- 清洁度 (0-100)
+    mood REAL DEFAULT 100,         -- 心情值 (0-100)
+    last_decay_time DATETIME,      -- 上次数值衰减的时间点
+    FOREIGN KEY (pet_id) REFERENCES pets(pet_id)
+);
+```
+3. 任务系统模块 (Task Engine)
+```sql
+-- 任务模版 (家长的设定)
+CREATE TABLE task_templates (
+    template_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    creator_id INTEGER,
+    category TEXT CHECK(category IN ('DAILY', 'PET_TRIGGER', 'CUSTOM', 'REINFORCE')),
+    title TEXT NOT NULL,
+    description TEXT,
+    reward_stars INTEGER DEFAULT 0,
+    is_reinforce BOOLEAN DEFAULT 0, -- 是否开启复习强化
+    repeat_pattern TEXT,            -- 存储JSON或CRON字符串，如 {"days": [1,3,5]}
+    FOREIGN KEY (creator_id) REFERENCES users(user_id)
+);
+
+-- 任务实例 (孩子实际看到的任务)
+CREATE TABLE task_instances (
+    instance_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    template_id INTEGER,
+    child_id INTEGER,
+    status TEXT DEFAULT 'TODO' CHECK(status IN ('TODO', 'DONE')),
+    plan_date DATE,                 -- 计划日期
+    completed_at DATETIME,          -- 实际完成时间
+    FOREIGN KEY (template_id) REFERENCES task_templates(template_id),
+    FOREIGN KEY (child_id) REFERENCES users(user_id)
+);
+
+-- 强化任务排程表 (艾宾浩斯逻辑)
+CREATE TABLE reinforcement_queue (
+    queue_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    original_template_id INTEGER,
+    child_id INTEGER,
+    next_trigger_date DATE,         -- 下一次自动生成的日期
+    interval_days INTEGER,          -- 间隔天数 (如 3, 7)
+    is_active BOOLEAN DEFAULT 1
+);
+```
+4.荣誉与商城模块 (Shop & Achievements)
+```sql
+-- 荣誉库 (徽章与奖杯定义)
+CREATE TABLE honors_library (
+    honor_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT CHECK(type IN ('BADGE', 'TROPHY')),
+    title TEXT,
+    image_url TEXT,
+    unlock_condition_json TEXT      -- 达成条件的逻辑描述
+);
+
+-- 用户荣誉获得表
+CREATE TABLE user_honors (
+    user_id INTEGER,
+    honor_id INTEGER,
+    achieved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, honor_id)
+);
+
+-- 商城物品
+CREATE TABLE mall_items (
+    item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    type TEXT CHECK(type IN ('VIRTUAL', 'PHYSICAL')),
+    price_stars INTEGER,
+    required_badge_id INTEGER,      -- 购买此物需要的徽章ID门槛
+    stock INTEGER DEFAULT -1,       -- -1表示无限
+    FOREIGN KEY (required_badge_id) REFERENCES honors_library(honor_id)
+);
+
+-- 愿望单 (进度型与兑换型)
+CREATE TABLE wish_list (
+    wish_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    child_id INTEGER,
+    wish_name TEXT,
+    wish_type TEXT CHECK(wish_type IN ('EXCHANGE', 'PROGRESS')),
+    target_value INTEGER,           -- 目标数（如20首诗或5个徽章）
+    current_value INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'WISHING',
+    FOREIGN KEY (child_id) REFERENCES users(user_id)
+);
+```
+5.索引优化
+```sql
+CREATE INDEX idx_task_instances_date ON task_instances(plan_date, child_id);
+CREATE INDEX idx_reinforce_trigger ON reinforcement_queue(next_trigger_date) WHERE is_active = 1;
+```
+5.1 事务处理
+```sql
+-- 伪代码参考
+BEGIN TRANSACTION;
+UPDATE wallets SET star_count = star_count - 50 WHERE user_id = 1;
+INSERT INTO orders ...;
+COMMIT;
+```
