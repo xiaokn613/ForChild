@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>徽章墙 - 宠物家园</title>
+    <style>
+        :root {
+            --bg-page: #fdfcf4;
+            --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            --text-main: #333;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+        body { background-color: var(--bg-page); padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 1024px; background: white; border-radius: 40px; min-height: 90vh; padding: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 30px; }
+        .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
+        .badge-card { text-align: center; padding: 25px; border-radius: 20px; border: 3px solid #e0e0e0; transition: all 0.3s; }
+        .badge-card.earned { border-color: var(--gold); background: linear-gradient(135deg, #fff9e6, #fff); box-shadow: 0 5px 20px rgba(251, 192, 45, 0.2); }
+        .badge-icon { font-size: 60px; margin-bottom: 15px; opacity: 0.3; }
+        .badge-card.earned .badge-icon { opacity: 1; animation: shine 2s infinite; }
+        @keyframes shine { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .badge-name { font-size: 16px; font-weight: bold; margin-bottom: 8px; }
+        .badge-desc { font-size: 12px; color: #999; }
+        .bottom-nav { display: flex; justify-content: space-around; padding: 20px 35px; background: white; border-top: 1px solid #f0f0f0; margin-top: 30px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: var(--text-main); padding: 10px 20px; border-radius: 15px; }
+        .nav-item.active { background: #e8f5e9; color: #48c69d; }
+        .nav-icon { font-size: 24px; }
+        .nav-label { font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-title">🏅 我的徽章墙</div>
+    <div class="badges-grid">
+        {% for badge in badges %}
+        <div class="badge-card {{ 'earned' if badge.id in earned_ids else '' }}">
+            <div class="badge-icon">{{ badge.icon or '⭐' }}</div>
+            <div class="badge-name">{{ badge.name }}</div>
+            <div class="badge-desc">{{ badge.description or '暂未解锁' }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="bottom-nav">
+        <a href="/child/home" class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></a>
+        <a href="/child/badges" class="nav-item active"><span class="nav-icon">🏅</span><span class="nav-label">徽章</span></a>
+        <a href="/child/trophies" class="nav-item"><span class="nav-icon">🏆</span><span class="nav-label">奖杯</span></a>
+    </div>
+</div>
+</body>
+</html>

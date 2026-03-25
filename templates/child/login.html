@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 宠物家园</title>
+    <style>
+        :root {
+            --bg-page: #fdfcf4;
+            --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+            --primary-green: #48c69d;
+            --text-main: #333;
+            --text-sub: #999;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 40px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .logo-area {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(72, 198, 157, 0.1);
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .role-option:hover {
+            border-color: var(--primary-green);
+            background: #f0fdf9;
+        }
+
+        .role-option.selected {
+            border-color: var(--primary-green);
+            background: #e8f5e9;
+        }
+
+        .role-option .icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .role-option .label {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .login-submit {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(61, 210, 243, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .login-submit:active {
+            transform: scale(0.98);
+        }
+
+        .parent-link {
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--text-sub);
+        }
+
+        .parent-link a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-area">🏠</div>
+    <h2>欢迎来到宠物家园</h2>
+    <p class="subtitle">请选择你的身份登录</p>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <div class="role-selector">
+        <div class="role-option selected" onclick="selectRole('child')">
+            <div class="icon">👦</div>
+            <div class="label">我是小朋友</div>
+        </div>
+        <div class="role-option" onclick="selectRole('parent')">
+            <div class="icon">👨‍👩‍👧</div>
+            <div class="label">我是家长</div>
+        </div>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label for="username">用户名</label>
+            <input type="text" id="username" name="username" required placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+            <label for="password">密码</label>
+            <input type="password" id="password" name="password" required placeholder="请输入密码">
+        </div>
+        <button type="submit" class="login-submit">立即登录</button>
+    </form>
+
+    <div class="parent-link">
+        管理孩子账号？<a href="/parent/login">进入家长端</a>
+    </div>
+</div>
+
+<script>
+    let selectedRole = 'child';
+
+    function selectRole(role) {
+        selectedRole = role;
+        document.querySelectorAll('.role-option').forEach(item => {
+            item.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('errorMessage');
+        
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    role: selectedRole
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // 登录成功，跳转到对应首页
+                if (selectedRole === 'child') {
+                    window.location.href = '/child/home';
+                } else {
+                    window.location.href = '/parent/dashboard';
+                }
+            } else {
+                errorDiv.textContent = data.message;
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            errorDiv.textContent = '网络错误，请稍后重试';
+            errorDiv.style.display = 'block';
+        }
+    }
+</script>
+
+</body>
+</html>

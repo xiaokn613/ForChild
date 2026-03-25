@@ -1,0 +1,181 @@
+{% extends "parent/layout.html" %}
+
+{% block title %}愿望单管理 - 家长端{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
+        <li class="breadcrumb-item active" aria-current="page">愿望单管理</li>
+    </ol>
+</nav>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" onclick="addWishlist()">
+            <i class="fas fa-plus"></i> 新增愿望
+        </button>
+        <button type="button" class="btn btn-success" onclick="exportWishlists()">
+            <i class="fas fa-download"></i> 导出
+        </button>
+    </div>
+</div>
+
+<!-- 愿望单列表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-star"></i> 愿望单列表
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>孩子</th>
+                    <th>愿望名称</th>
+                    <th>类型</th>
+                    <th>目标星星</th>
+                    <th>当前进度</th>
+                    <th>完成度</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for wish in wishlists %}
+                <tr>
+                    <td>{{ wish.id }}</td>
+                    <td>{{ wish.child_name }}</td>
+                    <td><strong>{{ wish.name }}</strong></td>
+                    <td>
+                        {% if wish.type == 'toy' %}
+                        <span class="badge badge-info">🧸 玩具</span>
+                        {% elif wish.type == 'book' %}
+                        <span class="badge badge-success">📚 书籍</span>
+                        {% elif wish.type == 'trip' %}
+                        <span class="badge badge-warning">✈️ 旅行</span>
+                        {% else %}
+                        <span class="badge badge-secondary">{{ wish.type }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-warning">💫 {{ wish.target_stars }}</span></td>
+                    <td><span class="badge badge-info">⭐ {{ wish.current_progress }}</span></td>
+                    <td>
+                        <div class="progress" style="width: 150px; height: 20px;">
+                            <div class="progress-bar {% if wish.is_completed %}bg-success{% else %}bg-warning{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ (wish.current_progress / wish.target_stars * 100) if wish.target_stars > 0 else 0 }}%;" 
+                                 aria-valuenow="{{ (wish.current_progress / wish.target_stars * 100) if wish.target_stars > 0 else 0 }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ ((wish.current_progress / wish.target_stars * 100)|int) if wish.target_stars > 0 else 0 }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if wish.is_completed %}
+                        <span class="badge badge-success"><i class="fas fa-check-circle"></i> 已完成</span>
+                        {% else %}
+                        <span class="badge badge-info"><i class="fas fa-clock"></i> 进行中</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ wish.created_at }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editWishlist({{ wish.id }})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="updateProgress({{ wish.id }})" title="更新进度">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteWishlist({{ wish.id }})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 新增愿望
+function addWishlist() {
+    layer.open({
+        type: 1,
+        title: '新增愿望单',
+        area: ['600px', '550px'],
+        content: `
+            <div style="padding: 20px;">
+                <form id="addWishlistForm">
+                    <div class="form-group">
+                        <label>愿望名称</label>
+                        <input type="text" class="form-control" placeholder="如：买一个乐高玩具" required>
+                    </div>
+                    <div class="form-group">
+                        <label>愿望类型</label>
+                        <select class="form-control">
+                            <option value="toy">🧸 玩具</option>
+                            <option value="book">📚 书籍</option>
+                            <option value="trip">✈️ 旅行</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>选择孩子</label>
+                        <select class="form-control">
+                            {% for child in children|default([]) %}
+                            <option value="{{ child.id }}">{{ child.nickname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>目标星星数量</label>
+                        <input type="number" class="form-control" required min="10" value="100">
+                    </div>
+                    <div class="form-group">
+                        <label>愿望描述</label>
+                        <textarea class="form-control" rows="3" placeholder="详细描述这个愿望..."></textarea>
+                    </div>
+                </form>
+            </div>
+        `,
+        btn: ['确定', '取消'],
+        yes: function(index) {
+            layer.msg('添加成功', {icon: 1});
+            layer.close(index);
+        }
+    });
+}
+
+// 编辑愿望
+function editWishlist(id) {
+    layer.msg('编辑愿望：' + id, {icon: 0, time: 1500});
+}
+
+// 更新进度
+function updateProgress(id) {
+    layer.prompt({title: '输入当前星星进度', formType: 0}, function(value, index) {
+        layer.msg('更新成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 删除愿望
+function deleteWishlist(id) {
+    layer.confirm('确定要删除这个愿望吗？', {icon: 3, title:'警告'}, function(index) {
+        layer.msg('删除成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 导出愿望单
+function exportWishlists() {
+    layer.msg('导出愿望单数据...', {icon: 1, time: 1500});
+}
+</script>
+{% endblock %}

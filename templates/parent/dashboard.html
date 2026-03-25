@@ -1,0 +1,449 @@
+{% extends "parent/layout.html" %}
+
+{% block title %}仪表盘 - 家长端{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
+        <li class="breadcrumb-item active" aria-current="page">仪表盘</li>
+    </ol>
+</nav>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-value">{{ total_children }}</div>
+                    <div class="stat-label">孩子数量</div>
+                </div>
+                <div style="font-size: 48px; opacity: 0.3;">👶</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div class="stat-label">今日任务总数</div>
+                </div>
+                <div style="font-size: 48px; opacity: 0.3;">📋</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-value">{{ completed_tasks }}</div>
+                    <div class="stat-label">已完成任务</div>
+                </div>
+                <div style="font-size: 48px; opacity: 0.3;">✅</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 孩子列表 -->
+<div class="card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-child"></i> 我的孩子</span>
+            <button class="btn btn-sm btn-primary" onclick="addChild()">
+                <i class="fas fa-plus"></i> 新增孩子
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>头像</th>
+                    <th>姓名</th>
+                    <th>昵称</th>
+                    <th>出生日期</th>
+                    <th>星星</th>
+                    <th>徽章</th>
+                    <th>奖杯</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for child in children %}
+                <tr>
+                    <td>
+                        {% if child.avatar %}
+                        <img src="{{ child.avatar }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="头像">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ child.nickname }}&background=random" 
+                             style="width: 40px; height: 40px; border-radius: 50%;" alt="头像">
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ child.name or '-' }}</strong></td>
+                    <td>{{ child.nickname }}</td>
+                    <td>{{ child.birthday or '-' }}</td>
+                    <td>{{ child.total_stars }}</td>
+                    <td>{{ child.total_badges }}</td>
+                    <td>{{ child.total_trophies }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editChild({{ child.id }})">
+                            <i class="fas fa-edit"></i> 详情
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 头像上传预览
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#avatarPreview').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 查看孩子详情
+function viewChildDetail(childId) {
+    layer.msg('查看孩子详情：' + childId, {
+        icon: 0,
+        time: 1500
+    });
+    // TODO: 实现查看详情逻辑
+}
+
+// 新增孩子
+function addChild() {
+    layer.open({
+        type: 1,
+        title: '<i class="fas fa-child"></i> 新增孩子账号',
+        area: ['600px', '620px'],
+        content: `
+            <div style="padding: 20px;">
+                <form id="addChildForm">
+                    <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                        <img id="avatarPreview" src="https://ui-avatars.com/api/?name=孩子&background=random" 
+                             style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 3px solid #e8eaec;" 
+                             alt="点击上传头像"
+                             onclick="document.getElementById('avatarInput').click()">
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                        <p style="margin-top: 10px; color: #909399; font-size: 12px;">点击头像图片可上传</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">姓名 <span style="color: red;">*</span></label>
+                        <input type="text" class="form-control" id="childName" placeholder="请输入孩子的真实姓名" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">昵称 <span style="color: red;">*</span></label>
+                        <input type="text" class="form-control" id="childNickname" placeholder="请输入孩子的昵称（用于登录）" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">出生日期</label>
+                        <input type="date" class="form-control" id="childBirthday">
+                    </div>
+                    <hr style="margin: 20px 0; border-top: 1px solid #e8eaec;">
+                    <h6 style="margin-bottom: 15px; color: #606266;"><i class="fas fa-cog"></i> 预设数据（可选）</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">预设星星</label>
+                                <input type="number" class="form-control" id="presetStars" value="0" min="0" placeholder="0">
+                                <small class="form-text text-muted">初始星星积分</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">预设徽章</label>
+                                <input type="number" class="form-control" id="presetBadges" value="0" min="0" placeholder="0">
+                                <small class="form-text text-muted">初始徽章数量</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label">预设奖杯</label>
+                                <input type="number" class="form-control" id="presetTrophies" value="0" min="0" placeholder="0">
+                                <small class="form-text text-muted">初始奖杯数量</small>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        `,
+        btn: ['确定添加', '取消'],
+        yes: function(index) {
+            // 获取表单数据
+            var name = $('#childName').val().trim();
+            var nickname = $('#childNickname').val().trim();
+            var birthday = $('#childBirthday').val();
+            var stars = parseInt($('#presetStars').val()) || 0;
+            var badges = parseInt($('#presetBadges').val()) || 0;
+            var trophies = parseInt($('#presetTrophies').val()) || 0;
+            var avatarData = $('#avatarPreview').attr('src');
+            
+            // 验证必填项
+            if (!name) {
+                layer.msg('请输入孩子的姓名', {icon: 2, time: 1500});
+                return;
+            }
+            if (!nickname) {
+                layer.msg('请输入孩子的昵称', {icon: 2, time: 1500});
+                return;
+            }
+            
+            // 提交数据
+            submitAddChild(name, nickname, birthday, avatarData, stars, badges, trophies, index);
+        },
+        success: function(layero) {
+            // 弹出层打开后的回调
+            console.log('新增孩子弹出层已打开');
+        }
+    });
+}
+
+// 编辑孩子信息
+function editChild(childId) {
+    layer.load(1);
+    
+    // 获取孩子详细信息
+    fetch(`/api/children/detail/${childId}`, {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        layer.closeAll('loading');
+        
+        if (data.success) {
+            const child = data.data;
+            
+            layer.open({
+                type: 1,
+                title: '<i class="fas fa-edit"></i> 编辑孩子信息',
+                area: ['600px', '620px'],
+                content: `
+                    <div style="padding: 20px;">
+                        <form id="editChildForm">
+                            <input type="hidden" id="editChildId" value="${child.id}">
+                            <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                                <img id="editAvatarPreview" src="${child.avatar || 'https://ui-avatars.com/api/?name=${child.nickname}&background=random'}" 
+                                     style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 3px solid #e8eaec;" 
+                                     alt="点击上传头像"
+                                     onclick="document.getElementById('editAvatarInput').click()">
+                                <input type="file" id="editAvatarInput" accept="image/*" style="display: none;" onchange="previewEditAvatar(this)">
+                                <p style="margin-top: 10px; color: #909399; font-size: 12px;">点击头像图片可上传</p>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">姓名 <span style="color: red;">*</span></label>
+                                <input type="text" class="form-control" id="editChildName" value="${child.name || ''}" placeholder="请输入孩子的真实姓名" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">昵称 <span style="color: red;">*</span></label>
+                                <input type="text" class="form-control" id="editChildNickname" value="${child.nickname}" placeholder="请输入孩子的昵称（用于登录）" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">出生日期</label>
+                                <input type="date" class="form-control" id="editChildBirthday" value="${child.birthday || ''}">
+                            </div>
+                            <hr style="margin: 20px 0; border-top: 1px solid #e8eaec;">
+                            <h6 style="margin-bottom: 15px; color: #606266;"><i class="fas fa-cog"></i> 星星、徽章、奖杯设置</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">星星数量</label>
+                                        <input type="number" class="form-control" id="editStars" value="${child.total_stars || 0}" min="0">
+                                        <small class="form-text text-muted">当前星星积分</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">徽章数量</label>
+                                        <input type="number" class="form-control" id="editBadges" value="${child.total_badges || 0}" min="0">
+                                        <small class="form-text text-muted">当前徽章数量</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label">奖杯数量</label>
+                                        <input type="number" class="form-control" id="editTrophies" value="${child.total_trophies || 0}" min="0">
+                                        <small class="form-text text-muted">当前奖杯数量</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                `,
+                btn: ['保存修改', '取消'],
+                yes: function(index) {
+                    var name = $('#editChildName').val().trim();
+                    var nickname = $('#editChildNickname').val().trim();
+                    var birthday = $('#editChildBirthday').val();
+                    var stars = parseInt($('#editStars').val()) || 0;
+                    var badges = parseInt($('#editBadges').val()) || 0;
+                    var trophies = parseInt($('#editTrophies').val()) || 0;
+                    var avatarData = $('#editAvatarPreview').attr('src');
+                    
+                    // 验证必填项
+                    if (!name) {
+                        layer.msg('请输入孩子的姓名', {icon: 2, time: 1500});
+                        return;
+                    }
+                    if (!nickname) {
+                        layer.msg('请输入孩子的昵称', {icon: 2, time: 1500});
+                        return;
+                    }
+                    
+                    // 提交数据
+                    submitEditChild(childId, name, nickname, birthday, avatarData, stars, badges, trophies, index);
+                },
+                success: function(layero) {
+                    console.log('编辑孩子弹出层已打开');
+                }
+            });
+        } else {
+            layer.msg('获取孩子信息失败：' + data.message, {icon: 2, time: 2000});
+        }
+    })
+    .catch(error => {
+        layer.closeAll('loading');
+        console.error('Error:', error);
+        layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+    });
+}
+
+// 预览编辑时的头像
+function previewEditAvatar(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#editAvatarPreview').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 提交编辑孩子数据
+function submitEditChild(childId, name, nickname, birthday, avatarData, stars, badges, trophies, layerIndex) {
+    layer.load(1); // 显示加载动画
+    
+    fetch(`/api/children/update/${childId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: name,
+            nickname: nickname,
+            birthday: birthday || null,
+            avatar: avatarData,
+            total_stars: stars,
+            total_badges: badges,
+            total_trophies: trophies
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        layer.closeAll('loading'); // 关闭加载动画
+        
+        if (data.success) {
+            // 显示成功消息
+            layer.msg('修改成功！', {icon: 1, time: 1500});
+            setTimeout(function() {
+                location.reload(); // 刷新页面
+            }, 1500);
+        } else {
+            // 显示错误消息
+            layer.msg('修改失败：' + data.message, {
+                icon: 2,
+                time: 3000,
+                shade: 0.3
+            });
+        }
+    })
+    .catch(error => {
+        layer.closeAll('loading');
+        console.error('Error:', error);
+        layer.msg('网络错误，请稍后重试', {
+            icon: 2,
+            time: 2000,
+            shade: 0.3
+        });
+    });
+}
+
+// 提交新增孩子数据
+function submitAddChild(name, nickname, birthday, avatarData, stars, badges, trophies, layerIndex) {
+    layer.load(1); // 显示加载动画
+    
+    // 实际的 API 调用
+    fetch('/api/children/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            name: name,
+            nickname: nickname,
+            birthday: birthday || null,
+            avatar: avatarData,
+            preset_stars: stars,
+            preset_badges: badges,
+            preset_trophies: trophies
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        layer.closeAll('loading'); // 关闭加载动画
+        
+        if (data.success) {
+            // 显示成功消息
+            layer.confirm(
+                `<div style="padding: 20px;">
+                    <p style="margin-bottom: 10px;"><strong>添加成功！</strong></p>
+                    <p style="color: #606266;">孩子昵称：<strong>${nickname}</strong></p>
+                    <p style="color: #606266;">默认密码：<strong style="color: #f5222d;">123456</strong></p>
+                    <p style="color: #909399; font-size: 12px;">请提醒孩子使用昵称和默认密码登录</p>
+                </div>`,
+                {
+                    title: '提示信息',
+                    btn: ['确定'],
+                    icon: 1,
+                    shade: 0.3
+                },
+                function(index) {
+                    layer.close(index);
+                    location.reload(); // 刷新页面
+                }
+            );
+        } else {
+            // 显示错误消息
+            layer.msg('添加失败：' + data.message, {
+                icon: 2,
+                time: 3000,
+                shade: 0.3
+            });
+        }
+    })
+    .catch(error => {
+        layer.closeAll('loading');
+        console.error('Error:', error);
+        layer.msg('网络错误，请稍后重试', {
+            icon: 2,
+            time: 2000,
+            shade: 0.3
+        });
+    });
+}
+</script>
+{% endblock %}

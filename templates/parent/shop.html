@@ -1,0 +1,202 @@
+{% extends "parent/layout.html" %}
+
+{% block title %}商城管理 - 家长端{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
+        <li class="breadcrumb-item active" aria-current="page">商城管理</li>
+    </ol>
+</nav>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" onclick="addItem()">
+            <i class="fas fa-plus"></i> 新增商品
+        </button>
+        <button type="button" class="btn btn-info" onclick="refreshData()">
+            <i class="fas fa-sync"></i> 刷新
+        </button>
+    </div>
+</div>
+
+<!-- 商品列表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-shopping-bag"></i> 商品列表
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>商品名称</th>
+                    <th>类别</th>
+                    <th>价格 (星星)</th>
+                    <th>效果值</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                    </td>
+                    <td>
+                        {% if item.category == 'food' %}
+                        <span class="badge badge-success"><i class="fas fa-utensils"></i> 食物</span>
+                        {% elif item.category == 'clothing' %}
+                        <span class="badge badge-info"><i class="fas fa-tshirt"></i> 装扮</span>
+                        {% else %}
+                        <span class="badge badge-secondary">{{ item.category }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-warning">💫 {{ item.price_stars }}</span></td>
+                    <td>{{ item.effect_value or '-' }}</td>
+                    <td>
+                        {% if item.is_active %}
+                        <span class="badge badge-success">上架中</span>
+                        {% else %}
+                        <span class="badge badge-secondary">已下架</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editItem({{ item.id }})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="toggleItem({{ item.id }})" title="上架/下架">
+                            <i class="fas fa-toggle-on"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem({{ item.id }})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 购买记录 -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-shopping-cart"></i> 购买记录
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>孩子</th>
+                    <th>商品</th>
+                    <th>数量</th>
+                    <th>总价 (星星)</th>
+                    <th>状态</th>
+                    <th>购买时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in purchase_records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.child_name }}</td>
+                    <td>{{ record.item_name }}</td>
+                    <td>{{ record.quantity }}</td>
+                    <td><span class="badge badge-warning">💫 {{ record.total_price }}</span></td>
+                    <td>
+                        {% if record.status == 'delivered' %}
+                        <span class="badge badge-success"><i class="fas fa-check-circle"></i> 已发放</span>
+                        {% else %}
+                        <span class="badge badge-warning"><i class="fas fa-clock"></i> 待发放</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 新增商品
+function addItem() {
+    layer.open({
+        type: 1,
+        title: '新增商品',
+        area: ['600px', '550px'],
+        content: `
+            <div style="padding: 20px;">
+                <form id="addItemForm">
+                    <div class="form-group">
+                        <label>商品名称</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>商品类别</label>
+                        <select class="form-control">
+                            <option value="food">食物</option>
+                            <option value="clothing">装扮</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>价格 (星星)</label>
+                        <input type="number" class="form-control" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>效果值</label>
+                        <input type="text" class="form-control" placeholder="如：+10 饱食度">
+                    </div>
+                    <div class="form-group">
+                        <label>商品描述</label>
+                        <textarea class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+        `,
+        btn: ['确定', '取消'],
+        yes: function(index) {
+            layer.msg('添加成功', {icon: 1});
+            layer.close(index);
+        }
+    });
+}
+
+// 编辑商品
+function editItem(id) {
+    layer.msg('编辑商品：' + id, {icon: 0, time: 1500});
+}
+
+// 上下架商品
+function toggleItem(id) {
+    layer.confirm('确定要切换商品上下架状态吗？', {icon: 3, title:'提示'}, function(index) {
+        layer.msg('操作成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 删除商品
+function deleteItem(id) {
+    layer.confirm('确定要删除这个商品吗？', {icon: 3, title:'警告'}, function(index) {
+        layer.msg('删除成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 刷新数据
+function refreshData() {
+    layer.msg('刷新数据...', {icon: 0, time: 1500});
+    location.reload();
+}
+</script>
+{% endblock %}

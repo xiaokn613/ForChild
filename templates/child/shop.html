@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商城 - 宠物家园</title>
+    <style>
+        :root {
+            --bg-page: #fdfcf4;
+            --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+            --gold: #fbc02d;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            --text-main: #333;
+            --text-sub: #999;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1024px;
+            background: white;
+            border-radius: 40px;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        }
+
+        .page-header {
+            padding: 25px 35px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .stars-display {
+            background: #fff9e6;
+            color: var(--gold);
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(251, 192, 45, 0.1);
+        }
+
+        .shop-content {
+            padding: 35px;
+            flex: 1;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-item {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .tab-item:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-item.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            border-color: var(--primary-green);
+            background: #f0fdf9;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(72, 198, 157, 0.2);
+        }
+
+        .item-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .item-desc {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 12px;
+            height: 32px;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 18px;
+            color: var(--gold);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 35px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 15px;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .nav-item:hover {
+            background: #f5f5f5;
+        }
+
+        .nav-item.active {
+            background: #e8f5e9;
+            color: var(--primary-green);
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .success-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #48c69d;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(72, 198, 157, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="page-header">
+        <div class="page-title">🛒 商城</div>
+        <div class="stars-display" id="totalStars">⭐ {{ child.total_stars }} 星星</div>
+    </div>
+
+    <div class="shop-content">
+        <div class="category-tabs">
+            <div class="tab-item active" onclick="filterCategory('all')">全部</div>
+            <div class="tab-item" onclick="filterCategory('food')">🍖 食物</div>
+            <div class="tab-item" onclick="filterCategory('cleaning')">✨ 清洁</div>
+            <div class="tab-item" onclick="filterCategory('mood')">😊 心情</div>
+            <div class="tab-item" onclick="filterCategory('decoration')">🏠 装饰</div>
+        </div>
+
+        <div class="items-grid" id="itemsGrid">
+            <!-- 商品将通过 JS 动态加载 -->
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/child/home" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">首页</span>
+        </a>
+        <a href="/child/tasks" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">任务</span>
+        </a>
+        <a href="/child/pets" class="nav-item">
+            <span class="nav-icon">🐶</span>
+            <span class="nav-label">宠物</span>
+        </a>
+        <a href="/child/shop" class="nav-item active">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label">商城</span>
+        </a>
+        <a href="/child/wishlists" class="nav-item">
+            <span class="nav-icon">🎯</span>
+            <span class="nav-label">愿望</span>
+        </a>
+    </div>
+</div>
+
+<script>
+    const itemsData = {{ items | tojson }};
+    let currentCategory = 'all';
+
+    function filterCategory(category) {
+        currentCategory = category;
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+        renderItems();
+    }
+
+    function renderItems() {
+        const container = document.getElementById('itemsGrid');
+        let filtered = itemsData;
+        
+        if (currentCategory !== 'all') {
+            filtered = itemsData.filter(item => item.category === currentCategory);
+        }
+
+        const icons = {
+            'food': '🍖',
+            'cleaning': '✨',
+            'mood': '😊',
+            'decoration': '🏠',
+            'physical': '📦'
+        };
+
+        container.innerHTML = filtered.map(item => `
+            <div class="item-card" onclick="purchaseItem(${item.id})">
+                <div class="item-icon">${icons[item.category] || '📦'}</div>
+                <div class="item-name">${item.name}</div>
+                <div class="item-desc">${item.description || ''}</div>
+                <div class="item-price">💫 ${item.price_stars} 星星</div>
+            </div>
+        `).join('');
+    }
+
+    async function purchaseItem(itemId) {
+        const item = itemsData.find(i => i.id === itemId);
+        if (!confirm(`确定要购买"${item.name}"吗？将消耗${item.price_stars}颗星星`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/shop/purchase', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity: 1
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('✅ 购买成功！');
+                document.getElementById('totalStars').textContent = '⭐ ' + data.data.new_total_stars + ' 星星';
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('操作失败，请稍后重试');
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'success-toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+
+    // 初始化渲染
+    window.onload = function() {
+        renderItems();
+    };
+</script>
+
+</body>
+</html>

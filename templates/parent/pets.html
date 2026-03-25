@@ -1,0 +1,210 @@
+{% extends "parent/layout.html" %}
+
+{% block title %}宠物管理 - 家长端{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
+        <li class="breadcrumb-item active" aria-current="page">宠物管理</li>
+    </ol>
+</nav>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary" onclick="addPet()">
+            <i class="fas fa-plus"></i> 新增宠物
+        </button>
+        <button type="button" class="btn btn-info" onclick="refreshData()">
+            <i class="fas fa-sync"></i> 刷新
+        </button>
+    </div>
+</div>
+
+<!-- 宠物列表 -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-paw"></i> 宠物列表
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>宠物头像</th>
+                    <th>名称</th>
+                    <th>类型</th>
+                    <th>等级</th>
+                    <th>主人</th>
+                    <th>饱腹度</th>
+                    <th>清洁度</th>
+                    <th>心情值</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pet in pets %}
+                <tr>
+                    <td>{{ pet.id }}</td>
+                    <td style="font-size: 32px;">
+                        {% if pet.type == 'dog' %}🐶
+                        {% elif pet.type == 'cat' %}🐱
+                        {% elif pet.type == 'pig' %}🐷
+                        {% else %}🐾
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ pet.name }}</strong></td>
+                    <td>
+                        {% if pet.type == 'dog' %}
+                        <span class="badge badge-info">🐕 狗</span>
+                        {% elif pet.type == 'cat' %}
+                        <span class="badge badge-info">🐈 猫</span>
+                        {% elif pet.type == 'pig' %}
+                        <span class="badge badge-info">🐖 猪</span>
+                        {% else %}
+                        <span class="badge badge-secondary">{{ pet.type }}</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-warning">Lv.{{ pet.level }}</span></td>
+                    <td>{{ pet.child_name }}</td>
+                    <td>
+                        <div class="progress" style="width: 100px; height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ pet.hunger }}%;" 
+                                 aria-valuenow="{{ pet.hunger }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ pet.hunger }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress" style="width: 100px; height: 20px;">
+                            <div class="progress-bar bg-info" role="progressbar" 
+                                 style="width: {{ pet.cleanliness }}%;" 
+                                 aria-valuenow="{{ pet.cleanliness }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ pet.cleanliness }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress" style="width: 100px; height: 20px;">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ pet.mood }}%;" 
+                                 aria-valuenow="{{ pet.mood }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ pet.mood }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ pet.created_at }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewPet({{ pet.id }})" title="详情">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="feedPet({{ pet.id }})" title="喂食">
+                            <i class="fas fa-utensils"></i>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="cleanPet({{ pet.id }})" title="清洁">
+                            <i class="fas fa-shower"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePet({{ pet.id }})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 新增宠物
+function addPet() {
+    layer.open({
+        type: 1,
+        title: '新增宠物',
+        area: ['600px', '500px'],
+        content: `
+            <div style="padding: 20px;">
+                <form id="addPetForm">
+                    <div class="form-group">
+                        <label>宠物名称</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>宠物类型</label>
+                        <select class="form-control">
+                            <option value="pig">🐷 小猪</option>
+                            <option value="dog">🐶 小狗</option>
+                            <option value="cat">🐱 小猫</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>选择主人</label>
+                        <select class="form-control">
+                            {% for child in children|default([]) %}
+                            <option value="{{ child.id }}">{{ child.nickname }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>性别</label>
+                        <select class="form-control">
+                            <option value="male">雄性</option>
+                            <option value="female">雌性</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        `,
+        btn: ['确定', '取消'],
+        yes: function(index) {
+            layer.msg('添加成功', {icon: 1});
+            layer.close(index);
+        }
+    });
+}
+
+// 查看宠物详情
+function viewPet(id) {
+    layer.msg('查看宠物详情：' + id, {icon: 0, time: 1500});
+}
+
+// 喂食宠物
+function feedPet(id) {
+    layer.prompt({title: '输入喂食数量', formType: 0}, function(value, index) {
+        layer.msg('喂食成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 清洁宠物
+function cleanPet(id) {
+    layer.confirm('确定要给宠物洗澡吗？', {icon: 3, title:'提示'}, function(index) {
+        layer.msg('清洁成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 删除宠物
+function deletePet(id) {
+    layer.confirm('确定要删除这个宠物吗？', {icon: 3, title:'警告'}, function(index) {
+        layer.msg('删除成功', {icon: 1});
+        layer.close(index);
+    });
+}
+
+// 刷新数据
+function refreshData() {
+    layer.msg('刷新数据...', {icon: 0, time: 1500});
+    location.reload();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "parent/layout.html" %}
+
+{% block title %}统计报表 - 家长端{% endblock %}
+
+{% block content %}
+<!-- 面包屑导航 -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
+        <li class="breadcrumb-item active" aria-current="page">统计报表</li>
+    </ol>
+</nav>
+
+<!-- 时间筛选 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <label class="form-label">开始日期</label>
+                <input type="date" class="form-control" id="startDate" value="{{ today }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">结束日期</label>
+                <input type="date" class="form-control" id="endDate" value="{{ today }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">选择孩子</label>
+                <select class="form-control" id="childSelect">
+                    <option value="all">全部</option>
+                    {% for child in children %}
+                    <option value="{{ child.id }}">{{ child.nickname }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn btn-primary btn-block" onclick="loadStatistics()">
+                    <i class="fas fa-search"></i> 查询
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计图表 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> 任务完成趋势
+            </div>
+            <div class="card-body">
+                <div id="taskTrendChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> 任务类型分布
+            </div>
+            <div class="card-body">
+                <div id="taskTypeChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i> 星星积分统计
+            </div>
+            <div class="card-body">
+                <div id="starChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 详细数据表格 -->
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-table"></i> 详细统计数据
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>孩子</th>
+                    <th>日期</th>
+                    <th>完成任务数</th>
+                    <th>获得星星</th>
+                    <th>宠物平均状态</th>
+                    <th>完成率</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in stats %}
+                <tr>
+                    <td>{{ stat.child_name }}</td>
+                    <td>{{ stat.stat_date }}</td>
+                    <td><span class="badge badge-info">{{ stat.tasks_completed }}</span></td>
+                    <td><span class="badge badge-warning">💫 {{ stat.stars_earned }}</span></td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ stat.pet_status_avg }}%;" 
+                                 aria-valuenow="{{ stat.pet_status_avg }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ stat.pet_status_avg }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% set rate = (stat.tasks_completed / 10 * 100)|int if stat.tasks_completed > 0 else 0 %}
+                        <span class="badge {% if rate >= 80 %}badge-success{% elif rate >= 60 %}badge-info{% else %}badge-warning{% endif %}">
+                            {{ rate }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+var taskTrendChart, taskTypeChart, starChart;
+
+// 初始化图表
+$(document).ready(function() {
+    initCharts();
+    loadStatistics();
+});
+
+function initCharts() {
+    taskTrendChart = echarts.init(document.getElementById('taskTrendChart'));
+    taskTypeChart = echarts.init(document.getElementById('taskTypeChart'));
+    starChart = echarts.init(document.getElementById('starChart'));
+}
+
+function loadStatistics() {
+    var startDate = $('#startDate').val();
+    var endDate = $('#endDate').val();
+    var childId = $('#childSelect').val();
+    
+    layer.msg('加载中...', {icon: 16, time: 1000});
+    
+    // 模拟数据 - 实际应该从 API 获取
+    var taskTrendOption = {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['完成任务数'] },
+        xAxis: {
+            type: 'category',
+            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        },
+        yAxis: {
+            type: 'value',
+            name: '任务数'
+        },
+        series: [{
+            name: '完成任务数',
+            type: 'line',
+            data: [5, 8, 6, 9, 7, 10, 8],
+            smooth: true,
+            areaStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: 'rgba(24,144,255,0.5)' },
+                    { offset: 1, color: 'rgba(24,144,255,0.1)' }
+                ])
+            },
+            itemStyle: { color: '#1890ff' }
+        }]
+    };
+    
+    var taskTypeOption = {
+        tooltip: { trigger: 'item' },
+        legend: { top: 'bottom' },
+        series: [{
+            name: '任务类型',
+            type: 'pie',
+            radius: '50%',
+            data: [
+                { value: 15, name: '日常任务' },
+                { value: 8, name: '宠物任务' },
+                { value: 3, name: '特殊任务' }
+            ],
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }]
+    };
+    
+    var starOption = {
+        tooltip: { trigger: 'axis' },
+        xAxis: {
+            type: 'category',
+            data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        },
+        yAxis: {
+            type: 'value',
+            name: '星星数量'
+        },
+        series: [{
+            name: '获得星星',
+            type: 'bar',
+            data: [50, 80, 60, 90, 70, 100, 80],
+            itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                    { offset: 0, color: '#faad14' },
+                    { offset: 1, color: '#ffd666' }
+                ])
+            }
+        }]
+    };
+    
+    taskTrendChart.setOption(taskTrendOption);
+    taskTypeChart.setOption(taskTypeOption);
+    starChart.setOption(starOption);
+}
+
+// 窗口大小改变时重新渲染图表
+window.addEventListener('resize', function() {
+    taskTrendChart.resize();
+    taskTypeChart.resize();
+    starChart.resize();
+});
+</script>
+{% endblock %}

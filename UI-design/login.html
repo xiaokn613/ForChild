@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 电子宠物</title>
+    <style>
+        :root {
+            --bg-page: #fdfcf4;
+            --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+            --primary-green: #48c69d;
+            --text-main: #333;
+            --text-sub: #999;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+
+        body {
+            background-color: var(--bg-page);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* 登录卡片 */
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 40px;
+            padding: 50px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .logo-area {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+        }
+
+        /* 孩子选择器 */
+        .child-selector {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 45px;
+        }
+
+        .child-item {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 80px;
+        }
+
+        .child-avatar {
+            width: 70px;
+            height: 70px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            border: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            transition: all 0.3s;
+        }
+
+        .child-item.selected .child-avatar {
+            border-color: var(--primary-green);
+            background: #e8f5e9;
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(72, 198, 157, 0.2);
+        }
+
+        .child-item span {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* 登录按钮 */
+        .login-submit {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(61, 210, 243, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .login-submit:active {
+            transform: scale(0.98);
+        }
+
+        /* 底部家长端入口 */
+        .parent-entrance {
+            margin-top: 35px;
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .parent-link {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo-area">🐶</div>
+    <h2>欢迎回来</h2>
+    <p class="subtitle">请选择你的角色进入宠物世界</p>
+
+    <div class="child-selector">
+        <div class="child-item selected" onclick="selectChild(this)">
+            <div class="child-avatar">👦</div>
+            <span>小明</span>
+        </div>
+        <div class="child-item" onclick="selectChild(this)">
+            <div class="child-avatar">👧</div>
+            <span>小红</span>
+        </div>
+        <div class="child-item" onclick="selectChild(this)">
+            <div class="child-avatar">👶</div>
+            <span>小小</span>
+        </div>
+    </div>
+
+    <button class="login-submit" onclick="handleLogin()">立即登录</button>
+
+    <div class="parent-entrance">
+        管理孩子账号？<a href="#" class="parent-link">家长端入口</a>
+    </div>
+</div>
+
+<script>
+    // 处理选择孩子
+    function selectChild(element) {
+        document.querySelectorAll('.child-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        element.classList.add('selected');
+    }
+
+    // 模拟登录跳转
+    function handleLogin() {
+        const selectedName = document.querySelector('.child-item.selected span').innerText;
+        alert('正在以 ' + selectedName + ' 的身份登录...');
+        // 这里可以添加 window.location.href = 'home.html';
+    }
+</script>
+
+</body>
+</html>

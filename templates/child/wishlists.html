@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>愿望单 - 宠物家园</title>
+    <style>
+        :root { --bg-page: #fdfcf4; --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d); --gold: #fbc02d; --text-main: #333; --text-sub: #999; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", sans-serif; }
+        body { background-color: var(--bg-page); padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 1024px; background: white; border-radius: 40px; min-height: 90vh; padding: 35px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 30px; }
+        .wish-list { display: flex; flex-direction: column; gap: 20px; }
+        .wish-item { background: white; border: 2px solid #e0e0e0; border-radius: 20px; padding: 25px; transition: all 0.3s; }
+        .wish-item.completed { border-color: #48c69d; background: #f0fdf9; }
+        .wish-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .wish-name { font-size: 18px; font-weight: bold; }
+        .wish-status { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .wish-status.completed { background: #48c69d; color: white; }
+        .wish-status.progress { background: var(--gold); color: white; }
+        .progress-bg { height: 16px; background: #f0f0f0; border-radius: 10px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #ffca28, #ff7043); border-radius: 10px; transition: width 0.5s; }
+        .wish-desc { font-size: 13px; color: var(--text-sub); }
+        .bottom-nav { display: flex; justify-content: space-around; padding: 20px 35px; background: white; border-top: 1px solid #f0f0f0; margin-top: 30px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: var(--text-main); padding: 10px 20px; border-radius: 15px; }
+        .nav-item.active { background: #e8f5e9; color: #48c69d; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-title">🎯 我的愿望单</div>
+    <div class="wish-list">
+        {% for wish in wishlists %}
+        <div class="wish-item {{ 'completed' if wish.is_completed else '' }}">
+            <div class="wish-header">
+                <div class="wish-name">{{ wish.name }}</div>
+                <div class="wish-status {{ 'completed' if wish.is_completed else 'progress' }}">
+                    {{ '✅ 已完成' if wish.is_completed else '进行中' }}
+                </div>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" style="width: {{ (wish.current_progress / wish.target_stars * 100) if wish.target_stars > 0 else 0 }}%;"></div>
+            </div>
+            <div class="wish-desc">
+                进度：{{ wish.current_progress }} / {{ wish.target_stars }} 星星
+                {% if not wish.is_completed and wish.target_stars > 0 %}
+                (还差 {{ wish.target_stars - wish.current_progress }} 星星)
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="bottom-nav">
+        <a href="/child/home" class="nav-item"><span class="nav-icon">🏠</span><span class="nav-label">首页</span></a>
+        <a href="/child/wishlists" class="nav-item active"><span class="nav-icon">🎯</span><span class="nav-label">愿望</span></a>
+    </div>
+</div>
+</body>
+</html>

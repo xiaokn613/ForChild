@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}家长端管理{% endblock %}</title>
+    
+    <!-- 国内 CDN 资源 (BootCDN 主要 + Staticfile 备用) -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" onerror="this.href='https://cdn.staticfile.org/twitter-bootstrap/4.6.2/css/bootstrap.min.css'">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.href='https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css'">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/layer/3.5.1/theme/default/layer.css" onerror="this.href='https://cdn.staticfile.org/layer/3.5.1/theme/default/layer.css'">
+    
+    <!-- 如果国内 CDN 失败，使用国际 CDN 作为最后备用 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" media="print" onload="this.media='all'" onerror="this.media='screen'"></link>
+    <style>
+        :root {
+            --ry-primary: #1890ff;
+            --ry-success: #52c41a;
+            --ry-warning: #faad14;
+            --ry-danger: #f5222d;
+            --ry-info: #909399;
+            --ry-border: #e8eaec;
+            --ry-bg: #f2f3f5;
+            --ry-text: #606266;
+            --ry-text-title: #303133;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: var(--ry-bg);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 顶部导航 */
+        .navbar {
+            background: linear-gradient(to right, #396afc, #29487d);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 0 20px;
+            height: 60px;
+        }
+        
+        .navbar-brand {
+            color: white !important;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand i {
+            margin-right: 10px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            padding: 0 15px !important;
+            height: 60px;
+            line-height: 60px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .user-info {
+            color: white;
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: white;
+        }
+        
+        /* 主容器 */
+        .container-fluid {
+            padding: 15px;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--ry-border);
+            padding: 12px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ry-text-title);
+        }
+        
+        .card-body {
+            padding: 15px;
+            background-color: white;
+        }
+        
+        /* 表格样式 */
+        .table {
+            font-size: 13px;
+        }
+        
+        .table thead th {
+            background-color: #fafafa;
+            border-bottom: 1px solid var(--ry-border);
+            color: var(--ry-text-title);
+            font-weight: 600;
+            padding: 12px 10px;
+        }
+        
+        .table tbody td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--ry-border);
+            color: var(--ry-text);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: #f5f7fa;
+        }
+        
+        /* 按钮样式 */
+        .btn-primary {
+            background-color: var(--ry-primary);
+            border-color: var(--ry-primary);
+        }
+        
+        .btn-success {
+            background-color: var(--ry-success);
+            border-color: var(--ry-success);
+        }
+        
+        .btn-warning {
+            background-color: var(--ry-warning);
+            border-color: var(--ry-warning);
+        }
+        
+        .btn-danger {
+            background-color: var(--ry-danger);
+            border-color: var(--ry-danger);
+        }
+        
+        .btn-sm {
+            padding: 3px 8px;
+            font-size: 12px;
+        }
+        
+        /* 表单样式 */
+        .form-control {
+            font-size: 13px;
+            border-color: #dcdfe6;
+        }
+        
+        .form-control:focus {
+            border-color: var(--ry-primary);
+            box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
+        }
+        
+        .form-label {
+            font-size: 13px;
+            color: var(--ry-text-title);
+            margin-bottom: 5px;
+        }
+        
+        /* 徽章样式 */
+        .badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 3px;
+        }
+        
+        /* 统计卡片 */
+        .stat-card {
+            background: white;
+            border-radius: 4px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--ry-text-title);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--ry-text);
+            margin-top: 5px;
+        }
+        
+        /* 分页样式 */
+        .pagination .page-link {
+            color: var(--ry-primary);
+            border-color: var(--ry-border);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--ry-primary);
+            border-color: var(--ry-primary);
+        }
+        
+        /* 工具栏 */
+        .toolbar {
+            margin-bottom: 10px;
+            padding: 10px 0;
+        }
+        
+        /* 面包屑 */
+        .breadcrumb {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .breadcrumb-item a {
+            color: var(--ry-primary);
+            text-decoration: none;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="/parent/dashboard">
+            <i class="fas fa-home"></i>
+            儿童任务管理系统
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_dashboard' %}active{% endif %}" href="/parent/dashboard">
+                        <i class="fas fa-tachometer-alt"></i> 仪表盘
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_tasks' %}active{% endif %}" href="/parent/tasks">
+                        <i class="fas fa-list-check"></i> 任务管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_shop' %}active{% endif %}" href="/parent/shop">
+                        <i class="fas fa-shopping-cart"></i> 商城管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_pets' %}active{% endif %}" href="/parent/pets">
+                        <i class="fas fa-paw"></i> 宠物管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_wishlists' %}active{% endif %}" href="/parent/wishlists">
+                        <i class="fas fa-star"></i> 愿望单管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'parent_statistics' %}active{% endif %}" href="/parent/statistics">
+                        <i class="fas fa-chart-bar"></i> 统计报表
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="user-info">
+                <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'User') }}&background=random" alt="用户头像">
+                <span>{{ session.get('username', '用户') }}</span>
+                <a href="/logout" style="color: white; margin-left: 15px; text-decoration: none;">
+                    <i class="fas fa-sign-out-alt"></i> 退出
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 主内容区 -->
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- 国内 CDN JavaScript 资源 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js" onerror="this.src='https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js'"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js" onerror="this.src='https://cdn.staticfile.org/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js'"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/layer/3.5.1/layer.js" onerror="this.src='https://cdn.staticfile.org/layer/3.5.1/layer.js'"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js" onerror="this.src='https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js'"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
