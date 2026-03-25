@@ -357,17 +357,43 @@ def get_task_templates():
     conn = get_db_connection()
     try:
         # 获取当前家长创建的所有任务模板（包括失活的，但不包括删除的）
+        # 使用 LEFT JOIN 提高性能
         templates = conn.execute('''
-            SELECT tt.*, c.nickname as child_name
+            SELECT tt.id, tt.name, tt.description, tt.child_id, tt.task_type,
+                   tt.star_reward, tt.badge_reward, tt.trophy_reward,
+                   tt.schedule_time, tt.schedule_time_start, tt.schedule_time_end,
+                   tt.repeat_days, tt.is_active, tt.created_at,
+                   c.nickname as child_name
             FROM task_templates tt
-            JOIN children c ON tt.child_id = c.id
+            LEFT JOIN children c ON tt.child_id = c.id
             WHERE tt.parent_id = ? AND tt.is_deleted = 0
             ORDER BY tt.created_at DESC
         ''', (parent_id,)).fetchall()
         
+        # 手动转换为字典列表（更高效）
+        result = []
+        for t in templates:
+            result.append({
+                'id': t['id'],
+                'name': t['name'],
+                'description': t['description'],
+                'child_id': t['child_id'],
+                'task_type': t['task_type'],
+                'star_reward': t['star_reward'],
+                'badge_reward': t['badge_reward'],
+                'trophy_reward': t['trophy_reward'],
+                'schedule_time': t['schedule_time'],
+                'schedule_time_start': t['schedule_time_start'],
+                'schedule_time_end': t['schedule_time_end'],
+                'repeat_days': t['repeat_days'],
+                'is_active': bool(t['is_active']),
+                'created_at': t['created_at'],
+                'child_name': t['child_name']
+            })
+        
         return jsonify({
             'success': True,
-            'data': [dict(t) for t in templates]
+            'data': result
         })
     except Exception as e:
         return jsonify({

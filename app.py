@@ -20,6 +20,14 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = 'forchild_secret_key_2026'  # 用于 session 加密
     
+    # 添加字体文件的 MIME 类型
+    app.config['MIMETYPES'] = [
+        ('application/font-woff', 'woff'),
+        ('application/font-woff2', 'woff2'),
+        ('application/octet-stream', 'ttf'),
+        ('image/svg+xml', 'svg'),
+    ]
+    
     # 启用 CORS
     CORS(app)
     

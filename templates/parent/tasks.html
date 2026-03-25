@@ -45,12 +45,15 @@
             <thead>
                 <tr>
                     <th><input type="checkbox" class="task-checkbox-all" data-type="daily"></th>
-                    <th>ID</th>
-                    <th>任务名称</th>
-                    <th>孩子</th>
-                    <th>时间范围</th>
-                    <th>重复周期</th>
-                    <th>状态</th>
+                    <th onclick="sortDailyTasks('id')" style="cursor: pointer;">ID <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('name')" style="cursor: pointer;">任务名称 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('child_name')" style="cursor: pointer;">孩子 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('schedule_time')" style="cursor: pointer;">时间范围 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('repeat_days')" style="cursor: pointer;">重复周期 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('star_reward')" style="cursor: pointer;">奖励星星 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('badge_reward')" style="cursor: pointer;">奖励徽章 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('trophy_reward')" style="cursor: pointer;">奖励奖杯 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortDailyTasks('is_active')" style="cursor: pointer;">状态 <i class="fas fa-sort"></i></th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -71,12 +74,15 @@
             <thead>
                 <tr>
                     <th><input type="checkbox" class="task-checkbox-all" data-type="pet"></th>
-                    <th>ID</th>
-                    <th>任务名称</th>
-                    <th>孩子</th>
-                    <th>时间范围</th>
-                    <th>重复周期</th>
-                    <th>状态</th>
+                    <th onclick="sortPetTasks('id')" style="cursor: pointer;">ID <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('name')" style="cursor: pointer;">任务名称 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('child_name')" style="cursor: pointer;">孩子 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('schedule_time')" style="cursor: pointer;">时间范围 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('repeat_days')" style="cursor: pointer;">重复周期 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('star_reward')" style="cursor: pointer;">奖励星星 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('badge_reward')" style="cursor: pointer;">奖励徽章 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('trophy_reward')" style="cursor: pointer;">奖励奖杯 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortPetTasks('is_active')" style="cursor: pointer;">状态 <i class="fas fa-sort"></i></th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -97,12 +103,15 @@
             <thead>
                 <tr>
                     <th><input type="checkbox" class="task-checkbox-all" data-type="reinforce"></th>
-                    <th>ID</th>
-                    <th>任务名称</th>
-                    <th>孩子</th>
-                    <th>时间范围</th>
-                    <th>重复周期</th>
-                    <th>状态</th>
+                    <th onclick="sortReinforceTasks('id')" style="cursor: pointer;">ID <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('name')" style="cursor: pointer;">任务名称 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('child_name')" style="cursor: pointer;">孩子 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('schedule_time')" style="cursor: pointer;">时间范围 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('repeat_days')" style="cursor: pointer;">重复周期 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('star_reward')" style="cursor: pointer;">奖励星星 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('badge_reward')" style="cursor: pointer;">奖励徽章 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('trophy_reward')" style="cursor: pointer;">奖励奖杯 <i class="fas fa-sort"></i></th>
+                    <th onclick="sortReinforceTasks('is_active')" style="cursor: pointer;">状态 <i class="fas fa-sort"></i></th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -117,8 +126,15 @@
 {% block extra_js %}
 <script>
 // 全局变量：当前排序字段和顺序
-var currentSortField = null;
-var currentSortOrder = 'asc';
+var dailySortField = null;
+var dailySortOrder = 'asc';
+var petSortField = null;
+var petSortOrder = 'asc';
+var reinforceSortField = null;
+var reinforceSortOrder = 'asc';
+
+// 全局数据缓存
+var allTaskTemplates = null;
 
 // 页面加载时获取任务列表
 $(document).ready(function() {
@@ -126,7 +142,243 @@ $(document).ready(function() {
     showTaskTypeHelp('daily'); // 初始化显示第一个类型的说明
 });
 
-// 排序功能
+// 定时任务排序功能（纯前端排序，使用缓存数据）
+function sortDailyTasks(field) {
+    if (!allTaskTemplates) {
+        layer.msg('数据加载中，请稍后', {icon: 4});
+        return;
+    }
+    
+    if (dailySortField === field) {
+        // 切换排序方向
+        dailySortOrder = dailySortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        dailySortField = field;
+        dailySortOrder = 'asc';
+    }
+    
+    // 筛选出定时任务
+    var dailyTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'daily'; });
+    
+    // 前端排序
+    dailyTasks.sort(function(a, b) {
+        var aVal = a[field];
+        var bVal = b[field];
+        
+        // 处理空值
+        if (!aVal) aVal = '';
+        if (!bVal) bVal = '';
+        
+        // 数字比较
+        if (field === 'star_reward' || field === 'badge_reward' || field === 'trophy_reward' || field === 'id') {
+            aVal = parseInt(aVal) || 0;
+            bVal = parseInt(bVal) || 0;
+        }
+        
+        // 时间范围特殊处理
+        if (field === 'schedule_time') {
+            if (a.schedule_time_start && a.schedule_time_end) {
+                aVal = a.schedule_time_start;
+            } else if (a.schedule_time) {
+                aVal = a.schedule_time;
+            } else {
+                aVal = '';
+            }
+            if (b.schedule_time_start && b.schedule_time_end) {
+                bVal = b.schedule_time_start;
+            } else if (b.schedule_time) {
+                bVal = b.schedule_time;
+            } else {
+                bVal = '';
+            }
+        }
+        
+        // 状态特殊处理
+        if (field === 'is_active') {
+            aVal = a.is_active ? 1 : 0;
+            bVal = b.is_active ? 1 : 0;
+        }
+        
+        if (dailySortOrder === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+    
+    renderDailyTaskList(dailyTasks);
+    updateSortIcon('daily', field, dailySortOrder);
+}
+
+// 宠物任务排序功能（纯前端排序，使用缓存数据）
+function sortPetTasks(field) {
+    if (!allTaskTemplates) {
+        layer.msg('数据加载中，请稍后', {icon: 4});
+        return;
+    }
+    
+    if (petSortField === field) {
+        // 切换排序方向
+        petSortOrder = petSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        petSortField = field;
+        petSortOrder = 'asc';
+    }
+    
+    // 筛选出宠物任务
+    var petTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'pet'; });
+    
+    // 前端排序
+    petTasks.sort(function(a, b) {
+        var aVal = a[field];
+        var bVal = b[field];
+        
+        // 处理空值
+        if (!aVal) aVal = '';
+        if (!bVal) bVal = '';
+        
+        // 数字比较
+        if (field === 'star_reward' || field === 'badge_reward' || field === 'trophy_reward' || field === 'id') {
+            aVal = parseInt(aVal) || 0;
+            bVal = parseInt(bVal) || 0;
+        }
+        
+        // 时间范围特殊处理
+        if (field === 'schedule_time') {
+            if (a.schedule_time_start && a.schedule_time_end) {
+                aVal = a.schedule_time_start;
+            } else if (a.schedule_time) {
+                aVal = a.schedule_time;
+            } else {
+                aVal = '';
+            }
+            if (b.schedule_time_start && b.schedule_time_end) {
+                bVal = b.schedule_time_start;
+            } else if (b.schedule_time) {
+                bVal = b.schedule_time;
+            } else {
+                bVal = '';
+            }
+        }
+        
+        // 状态特殊处理
+        if (field === 'is_active') {
+            aVal = a.is_active ? 1 : 0;
+            bVal = b.is_active ? 1 : 0;
+        }
+        
+        if (petSortOrder === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+    
+    renderPetTaskList(petTasks);
+    updateSortIcon('pet', field, petSortOrder);
+}
+
+// 强化任务排序功能（纯前端排序，使用缓存数据）
+function sortReinforceTasks(field) {
+    if (!allTaskTemplates) {
+        layer.msg('数据加载中，请稍后', {icon: 4});
+        return;
+    }
+    
+    if (reinforceSortField === field) {
+        // 切换排序方向
+        reinforceSortOrder = reinforceSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        reinforceSortField = field;
+        reinforceSortOrder = 'asc';
+    }
+    
+    // 筛选出强化任务
+    var reinforceTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'reinforce'; });
+    
+    // 前端排序
+    reinforceTasks.sort(function(a, b) {
+        var aVal = a[field];
+        var bVal = b[field];
+        
+        // 处理空值
+        if (!aVal) aVal = '';
+        if (!bVal) bVal = '';
+        
+        // 数字比较
+        if (field === 'star_reward' || field === 'badge_reward' || field === 'trophy_reward' || field === 'id') {
+            aVal = parseInt(aVal) || 0;
+            bVal = parseInt(bVal) || 0;
+        }
+        
+        // 时间范围特殊处理
+        if (field === 'schedule_time') {
+            if (a.schedule_time_start && a.schedule_time_end) {
+                aVal = a.schedule_time_start;
+            } else if (a.schedule_time) {
+                aVal = a.schedule_time;
+            } else {
+                aVal = '';
+            }
+            if (b.schedule_time_start && b.schedule_time_end) {
+                bVal = b.schedule_time_start;
+            } else if (b.schedule_time) {
+                bVal = b.schedule_time;
+            } else {
+                bVal = '';
+            }
+        }
+        
+        // 状态特殊处理
+        if (field === 'is_active') {
+            aVal = a.is_active ? 1 : 0;
+            bVal = b.is_active ? 1 : 0;
+        }
+        
+        if (reinforceSortOrder === 'asc') {
+            return aVal > bVal ? 1 : -1;
+        } else {
+            return aVal < bVal ? 1 : -1;
+        }
+    });
+    
+    renderReinforceTaskList(reinforceTasks);
+    updateSortIcon('reinforce', field, reinforceSortOrder);
+}
+
+// 更新排序图标
+function updateSortIcon(taskType, field, order) {
+    // 重置所有图标
+    $('#dailyTaskTable th i').removeClass('fas fa-sort-up fas fa-sort-down').addClass('fas fa-sort');
+    $('#petTaskTable th i').removeClass('fas fa-sort-up fas fa-sort-down').addClass('fas fa-sort');
+    $('#reinforceTaskTable th i').removeClass('fas fa-sort-up fas fa-sort-down').addClass('fas fa-sort');
+    
+    // 确定要更新的表格
+    var tableId = taskType + 'TaskTable';
+    var iconClass = order === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+    
+    // 映射字段到列索引
+    var fieldMap = {
+        'id': 1,
+        'name': 2,
+        'child_name': 3,
+        'schedule_time': 4,
+        'repeat_days': 5,
+        'star_reward': 6,
+        'badge_reward': 7,
+        'trophy_reward': 8,
+        'is_active': 9
+    };
+    
+    var colIndex = fieldMap[field];
+    if (colIndex) {
+        $('#' + tableId + ' th:eq(' + (colIndex - 1) + ') i')
+            .removeClass('fas fa-sort')
+            .addClass('fas ' + iconClass);
+    }
+}
+
+// 旧的排序功能（保留以兼容）
 function sortTasks(field) {
     if (currentSortField === field) {
         // 切换排序方向
@@ -152,7 +404,7 @@ function sortTasks(field) {
                     if (!bVal) bVal = '';
                     
                     // 数字比较
-                    if (field === 'star_reward' || field === 'id') {
+                    if (field === 'star_reward' || field === 'badge_reward' || field === 'trophy_reward' || field === 'id') {
                         aVal = parseInt(aVal) || 0;
                         bVal = parseInt(bVal) || 0;
                     }
@@ -227,18 +479,23 @@ function showEditTaskTypeHelp(taskType) {
     $('#editTaskTypeHelp').html(helpText);
 }
 
-// 加载任务模板列表
+// 加载任务模板列表（只加载一次，后续使用缓存）
 function loadTaskTemplates() {
+    // 显示加载提示
+    var loadingIndex = layer.load(1);
+    
     fetch('/api/tasks/templates')
         .then(response => response.json())
         .then(data => {
+            layer.close(loadingIndex);
             if (data.success) {
-                var templates = data.data;
+                // 缓存所有数据到全局变量
+                allTaskTemplates = data.data;
                 
                 // 按任务类型分类渲染
-                var dailyTasks = templates.filter(function(t) { return t.task_type === 'daily'; });
-                var petTasks = templates.filter(function(t) { return t.task_type === 'pet'; });
-                var reinforceTasks = templates.filter(function(t) { return t.task_type === 'reinforce'; });
+                var dailyTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'daily'; });
+                var petTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'pet'; });
+                var reinforceTasks = allTaskTemplates.filter(function(t) { return t.task_type === 'reinforce'; });
                 
                 // 分别渲染到三个卡片
                 renderDailyTaskList(dailyTasks);
@@ -249,6 +506,7 @@ function loadTaskTemplates() {
             }
         })
         .catch(error => {
+            layer.close(loadingIndex);
             console.error('Error:', error);
             layer.msg('网络错误', {icon: 2});
         });
@@ -256,13 +514,7 @@ function loadTaskTemplates() {
 
 // 渲染定时任务列表
 function renderDailyTaskList(templates) {
-    // 排序：按创建时间倒序（默认）
-    if (!currentSortField || !currentSortOrder) {
-        templates.sort(function(a, b) {
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-    }
-    
+    // 数据已经在传入前排序好了，直接渲染
     var html = '';
     templates.forEach(function(template) {
         // 时间范围显示
@@ -308,6 +560,9 @@ function renderDailyTaskList(templates) {
                 <td>${template.child_name}</td>
                 <td>${timeRange}</td>
                 <td>${repeatDaysText}</td>
+                <td><span class="badge badge-warning"><i class="fas fa-star"></i> ${template.star_reward || 0}</span></td>
+                <td><span class="badge badge-info"><i class="fas fa-medal"></i> ${template.badge_reward || 0}</span></td>
+                <td><span class="badge badge-danger"><i class="fas fa-trophy"></i> ${template.trophy_reward || 0}</span></td>
                 <td>${statusBadge}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="editTask(${template.id})" title="编辑">
@@ -328,13 +583,7 @@ function renderDailyTaskList(templates) {
 
 // 渲染宠物任务列表
 function renderPetTaskList(templates) {
-    // 排序：按创建时间倒序（默认）
-    if (!currentSortField || !currentSortOrder) {
-        templates.sort(function(a, b) {
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-    }
-    
+    // 数据已经在传入前排序好了，直接渲染
     var html = '';
     templates.forEach(function(template) {
         // 时间范围显示
@@ -380,6 +629,9 @@ function renderPetTaskList(templates) {
                 <td>${template.child_name}</td>
                 <td>${timeRange}</td>
                 <td>${repeatDaysText}</td>
+                <td><span class="badge badge-warning"><i class="fas fa-star"></i> ${template.star_reward || 0}</span></td>
+                <td><span class="badge badge-info"><i class="fas fa-medal"></i> ${template.badge_reward || 0}</span></td>
+                <td><span class="badge badge-danger"><i class="fas fa-trophy"></i> ${template.trophy_reward || 0}</span></td>
                 <td>${statusBadge}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="editTask(${template.id})" title="编辑">
@@ -400,13 +652,7 @@ function renderPetTaskList(templates) {
 
 // 渲染强化任务列表
 function renderReinforceTaskList(templates) {
-    // 排序：按创建时间倒序（默认）
-    if (!currentSortField || !currentSortOrder) {
-        templates.sort(function(a, b) {
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-    }
-    
+    // 数据已经在传入前排序好了，直接渲染
     var html = '';
     templates.forEach(function(template) {
         // 时间范围显示
@@ -452,6 +698,9 @@ function renderReinforceTaskList(templates) {
                 <td>${template.child_name}</td>
                 <td>${timeRange}</td>
                 <td>${repeatDaysText}</td>
+                <td><span class="badge badge-warning"><i class="fas fa-star"></i> ${template.star_reward || 0}</span></td>
+                <td><span class="badge badge-info"><i class="fas fa-medal"></i> ${template.badge_reward || 0}</span></td>
+                <td><span class="badge badge-danger"><i class="fas fa-trophy"></i> ${template.trophy_reward || 0}</span></td>
                 <td>${statusBadge}</td>
                 <td>
                     <button class="btn btn-sm btn-primary" onclick="editTask(${template.id})" title="编辑">
@@ -935,7 +1184,7 @@ function deleteTask(id) {
     });
 }
 
-// 搜索任务
+// 搜索任务（使用缓存数据）
 function searchTasks() {
     var keyword = $('#searchInput').val().trim();
     
@@ -944,93 +1193,67 @@ function searchTasks() {
         return;
     }
     
+    if (!allTaskTemplates) {
+        layer.msg('数据加载中，请稍后', {icon: 4});
+        return;
+    }
+    
     // 前端过滤
-    fetch('/api/tasks/templates')
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                layer.msg('加载失败：' + data.message, {icon: 2});
-                return;
-            }
-            
-            var filtered = data.data.filter(function(template) {
-                return template.name.indexOf(keyword) !== -1 || 
-                       (template.description && template.description.indexOf(keyword) !== -1) ||
-                       template.child_name.indexOf(keyword) !== -1;
-            });
-            
-            renderTaskList(filtered);
-            layer.msg(`找到 ${filtered.length} 个相关任务`, {icon: 1, time: 1000});
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            layer.msg('网络错误', {icon: 2});
-        });
+    var filtered = allTaskTemplates.filter(function(template) {
+        return template.name.indexOf(keyword) !== -1 || 
+               (template.description && template.description.indexOf(keyword) !== -1) ||
+               template.child_name.indexOf(keyword) !== -1;
+    });
+    
+    renderTaskList(filtered);
+    layer.msg(`找到 ${filtered.length} 个相关任务`, {icon: 1, time: 1000});
 }
 
-// 导出任务
+// 导出任务（使用缓存数据）
 function exportTasks() {
     layer.confirm('确定要导出所有任务数据吗？将生成 CSV 文件。', {
         icon: 3,
         title: '<i class="fas fa-download"></i> 导出确认'
     }, function(index) {
-        layer.load(1);
+        if (!allTaskTemplates || allTaskTemplates.length === 0) {
+            layer.msg('暂无任务数据', {icon: 0});
+            layer.close(index);
+            return;
+        }
         
-        fetch('/api/tasks/templates')
-            .then(response => response.json())
-            .then(data => {
-                layer.closeAll('loading');
-                
-                if (!data.success) {
-                    layer.msg('获取数据失败：' + data.message, {icon: 2});
-                    return;
-                }
-                
-                if (data.data.length === 0) {
-                    layer.msg('暂无任务数据', {icon: 0});
-                    return;
-                }
-                
-                // 生成 CSV 内容
-                var csvContent = '\uFEFF'; // BOM for UTF-8
-                csvContent += 'ID,任务名称,任务描述,孩子,类型,奖励星星,奖励徽章,奖励奖杯,定时时间,重复周期,创建时间\n';
-                
-                data.data.forEach(function(task) {
-                    var row = [
-                        task.id,
-                        `"${task.name}"`,
-                        `"${task.description || ''}"`,
-                        `"${task.child_name}"`,
-                        task.task_type,
-                        task.star_reward,
-                        task.badge_reward,
-                        task.trophy_reward,
-                        task.schedule_time || '',
-                        task.repeat_days || '',
-                        task.created_at
-                    ];
-                    csvContent += row.join(',') + '\n';
-                });
-                
-                // 创建下载链接
-                var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                var link = document.createElement('a');
-                var url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', '任务模板_' + new Date().format('yyyyMMddhhmmss') + '.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                layer.msg('导出成功！', {icon: 1, time: 1500});
-            })
-            .catch(error => {
-                layer.closeAll('loading');
-                console.error('Error:', error);
-                layer.msg('导出失败', {icon: 2});
-            });
+        // 生成 CSV 内容
+        var csvContent = '\uFEFF'; // BOM for UTF-8
+        csvContent += 'ID，任务名称，任务描述，孩子，类型，奖励星星，奖励徽章，奖励奖杯，定时时间，重复周期，创建时间\n';
         
+        allTaskTemplates.forEach(function(task) {
+            var row = [
+                task.id,
+                `"${task.name}"`,
+                `"${task.description || ''}"`,
+                `"${task.child_name}"`,
+                task.task_type,
+                task.star_reward,
+                task.badge_reward,
+                task.trophy_reward,
+                task.schedule_time || '',
+                task.repeat_days || '',
+                task.created_at
+            ];
+            csvContent += row.join(',') + '\n';
+        });
+        
+        // 创建下载链接
+        var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        var url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', '任务模板_' + new Date().format('yyyyMMddhhmmss') + '.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        layer.msg('导出成功！', {icon: 1, time: 1500});
         layer.close(index);
     });
 }

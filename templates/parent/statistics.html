@@ -127,13 +127,59 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- 仅在统计页面异步加载本地 ECharts（最快最稳定） -->
 <script>
+// 异步加载本地 ECharts，零 CDN 延迟
+(function() {
+    var script = document.createElement('script');
+    // 优先使用本地文件（无 CDN 延迟），失败则回退到 CDN
+    script.src = '/static/echarts.min.js';
+    
+    var loadTimeout = setTimeout(function() {
+        console.warn('本地 ECharts 加载超时 (>2 秒)，尝试 CDN...');
+        script.src = 'https://g.alicdn.com/deps/echarts/5.4.3/echarts.core.min.js';
+    }, 2000); // 2 秒超时
+    
+    script.onload = function() {
+        clearTimeout(loadTimeout);
+        console.log('✓ ECharts 加载完成（本地或 CDN）');
+        // ECharts 加载完成后初始化图表
+        initCharts();
+        loadStatistics();
+    };
+    
+    script.onerror = function() {
+        clearTimeout(loadTimeout);
+        console.error('✗ 本地 ECharts 加载失败，尝试所有 CDN');
+        // 尝试 CDN 列表
+        var cdnUrls = [
+            'https://g.alicdn.com/deps/echarts/5.4.3/echarts.core.min.js',
+            'https://cdn-go.cn/echarts/5.4.3/echarts.core.min.js',
+            'https://lib.baomitu.com/echarts/5.4.3/echarts.core.min.js'
+        ];
+        var cdnIndex = 0;
+        
+        function tryNextCdn() {
+            if (cdnIndex >= cdnUrls.length) {
+                layer.msg('图表组件加载失败', {icon: 2});
+                return;
+            }
+            script.src = cdnUrls[cdnIndex++];
+        }
+        
+        script.onerror = tryNextCdn; // 失败则尝试下一个 CDN
+        tryNextCdn();
+    };
+    
+    document.body.appendChild(script);
+})();
+
 var taskTrendChart, taskTypeChart, starChart;
 
-// 初始化图表
+// 页面加载时先显示占位内容，ECharts 加载完成后再初始化
 $(document).ready(function() {
-    initCharts();
-    loadStatistics();
+    // 显示加载提示
+    layer.msg('正在加载图表组件...', {icon: 16, time: 800});
 });
 
 function initCharts() {

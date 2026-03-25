@@ -99,6 +99,13 @@ def init_db():
             )
         ''')
         
+        # 为 task_templates 表创建索引以优化查询性能
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_templates_parent_id ON task_templates(parent_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_templates_child_id ON task_templates(child_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_templates_task_type ON task_templates(task_type)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_templates_is_deleted ON task_templates(is_deleted)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_task_templates_created_at ON task_templates(created_at)')
+        
         # 5. 每日任务实例表（实际打卡的任务）
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS daily_tasks (

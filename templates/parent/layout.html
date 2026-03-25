@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}家长端管理{% endblock %}</title>
     
-    <!-- 国内 CDN 资源 (BootCDN 主要 + Staticfile 备用) -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" onerror="this.href='https://cdn.staticfile.org/twitter-bootstrap/4.6.2/css/bootstrap.min.css'">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.href='https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css'">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/layer/3.5.1/theme/default/layer.css" onerror="this.href='https://cdn.staticfile.org/layer/3.5.1/theme/default/layer.css'">
-    
-    <!-- 如果国内 CDN 失败，使用国际 CDN 作为最后备用 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.2/css/bootstrap.min.css" media="print" onload="this.media='all'" onerror="this.media='screen'"></link>
+    <!-- 本地 CSS 资源 -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/fontawesome.min.css">
+    <link rel="stylesheet" href="/static/layer.css">
     <style>
         :root {
             --ry-primary: #1890ff;
@@ -292,11 +289,12 @@
         {% block content %}{% endblock %}
     </div>
     
-    <!-- 国内 CDN JavaScript 资源 -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js" onerror="this.src='https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js'"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js" onerror="this.src='https://cdn.staticfile.org/twitter-bootstrap/4.6.2/js/bootstrap.bundle.min.js'"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/layer/3.5.1/layer.js" onerror="this.src='https://cdn.staticfile.org/layer/3.5.1/layer.js'"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js" onerror="this.src='https://cdn.staticfile.org/echarts/5.4.3/echarts.min.js'"></script>
+    <!-- 本地 JavaScript 资源（从 node_modules 复制到 static 目录） -->
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/bootstrap.bundle.min.js"></script>
+    <script src="/static/layer.js"></script>
+    
+    <!-- ECharts 按需加载，在需要的页面中引入 -->
     {% block extra_js %}{% endblock %}
 </body>
 </html>
