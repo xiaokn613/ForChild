@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="项目初始化" />
+    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/UI-design/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/my-pets.html" beforeDir="false" afterPath="$PROJECT_DIR$/UI-design/my-pets.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/demo/pets-store.html" beforeDir="false" afterPath="$PROJECT_DIR$/UI-design/pets-store.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/prd.md" beforeDir="false" afterPath="$PROJECT_DIR$/prd.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,12 +23,12 @@
     &quot;assignee&quot;: &quot;xiaokn613&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/xiaokn613/ForChild.git",
-    "accountId": "28324fa9-89d2-40f7-b86a-17a2169410e8"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/xiaokn613/ForChild.git&quot;,
+    &quot;accountId&quot;: &quot;28324fa9-89d2-40f7-b86a-17a2169410e8&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4,
   &quot;fromUser&quot;: false
@@ -46,6 +53,11 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -62,7 +74,25 @@
       <updated>1774357611961</updated>
       <workItem from="1774357612813" duration="4632000" />
       <workItem from="1774405619511" duration="108000" />
+      <workItem from="1774411199294" duration="3381000" />
     </task>
+    <task id="LOCAL-00001" summary="项目初始化">
+      <option name="closed" value="true" />
+      <created>1774411240687</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1774411240687</updated>
+    </task>
+    <task id="LOCAL-00002" summary="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作">
+      <option name="closed" value="true" />
+      <created>1774411275557</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1774411275557</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -81,6 +111,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="项目初始化" />
-    <option name="LAST_COMMIT_MESSAGE" value="项目初始化" />
+    <MESSAGE value="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作" />
   </component>
 </project>
