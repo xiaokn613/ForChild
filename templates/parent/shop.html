@@ -17,9 +17,6 @@
         <button type="button" class="btn btn-primary" onclick="addItem()">
             <i class="fas fa-plus"></i> 新增商品
         </button>
-        <button type="button" class="btn btn-info" onclick="refreshData()">
-            <i class="fas fa-sync"></i> 刷新
-        </button>
     </div>
 </div>
 
@@ -33,10 +30,11 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>商品图片</th>
                     <th>商品名称</th>
                     <th>类别</th>
-                    <th>价格 (星星)</th>
-                    <th>效果值</th>
+                    <th>星星价格</th>
+                    <th>实际金额</th>
                     <th>状态</th>
                     <th>操作</th>
                 </tr>
@@ -46,19 +44,27 @@
                 <tr>
                     <td>{{ item.id }}</td>
                     <td>
-                        <strong>{{ item.name }}</strong>
-                    </td>
-                    <td>
-                        {% if item.category == 'food' %}
-                        <span class="badge badge-success"><i class="fas fa-utensils"></i> 食物</span>
-                        {% elif item.category == 'clothing' %}
-                        <span class="badge badge-info"><i class="fas fa-tshirt"></i> 装扮</span>
+                        {% if item.image %}
+                        <img src="{{ item.image }}" alt="{{ item.name }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
                         {% else %}
-                        <span class="badge badge-secondary">{{ item.category }}</span>
+                        <div style="width: 60px; height: 60px; background-color: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            <i class="fas fa-image"></i>
+                        </div>
                         {% endif %}
                     </td>
-                    <td><span class="badge badge-warning">💫 {{ item.price_stars }}</span></td>
-                    <td>{{ item.effect_value or '-' }}</td>
+                    <td>
+                        <strong>{{ item.name }}</strong><br>
+                        <small class="text-muted">{{ item.description[:30] if item.description else '' }}{{ '...' if item.description and item.description|length > 30 else '' }}</small>
+                    </td>
+                    <td>
+                        {% if categories %}
+                        {{ categories.get(item.category, item.category) }}
+                        {% else %}
+                        {{ item.category }}
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-warning"><i class="fas fa-star"></i> {{ item.price_stars }}</span></td>
+                    <td>¥{{ "%.2f"|format(item.real_price or 0) }}</td>
                     <td>
                         {% if item.is_active %}
                         <span class="badge badge-success">上架中</span>
@@ -70,8 +76,8 @@
                         <button class="btn btn-sm btn-primary" onclick="editItem({{ item.id }})" title="编辑">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-success" onclick="toggleItem({{ item.id }})" title="上架/下架">
-                            <i class="fas fa-toggle-on"></i>
+                        <button class="btn btn-sm btn-success" onclick="toggleItem({{ item.id }}, {{ item.is_active }})" title="{{ '下架' if item.is_active else '上架' }}">
+                            <i class="fas fa-{{ 'toggle-on' if item.is_active else 'toggle-off' }}"></i>
                         </button>
                         <button class="btn btn-sm btn-danger" onclick="deleteItem({{ item.id }})" title="删除">
                             <i class="fas fa-trash"></i>
@@ -128,74 +134,290 @@
 
 {% block extra_js %}
 <script>
+// 商品类别字典（从后端传入）
+const CATEGORY_DICT = {{ categories | tojson if categories else {} }};
+
+// 获取类别显示名称
+function getCategoryName(key) {
+    return CATEGORY_DICT[key] || key;
+}
+
+// 生成类别选项 HTML
+function generateCategoryOptions(selectedValue = '') {
+    const options = Object.keys(CATEGORY_DICT).map(key => 
+        `<option value="${key}" ${key === selectedValue ? 'selected' : ''}>${CATEGORY_DICT[key]}</option>`
+    ).join('');
+    
+    return `
+        <option value="">请选择类别</option>
+        ${options}
+    `;
+}
+
 // 新增商品
 function addItem() {
     layer.open({
         type: 1,
         title: '新增商品',
-        area: ['600px', '550px'],
+        area: ['700px', '650px'],
         content: `
             <div style="padding: 20px;">
-                <form id="addItemForm">
+                <form id="addItemForm" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label>商品名称</label>
-                        <input type="text" class="form-control" required>
+                        <label>商品名称 <span style="color: red;">*</span></label>
+                        <input type="text" id="item_name" class="form-control" required placeholder="请输入商品名称">
                     </div>
                     <div class="form-group">
-                        <label>商品类别</label>
-                        <select class="form-control">
-                            <option value="food">食物</option>
-                            <option value="clothing">装扮</option>
-                            <option value="other">其他</option>
+                        <label>商品类别 <span style="color: red;">*</span></label>
+                        <select id="item_category" class="form-control" required>
+                            ${generateCategoryOptions()}
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>价格 (星星)</label>
-                        <input type="number" class="form-control" required min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>效果值</label>
-                        <input type="text" class="form-control" placeholder="如：+10 饱食度">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>星星价格</label>
+                                <input type="number" id="item_price_stars" class="form-control" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>实际金额（元）</label>
+                                <input type="number" id="item_real_price" class="form-control" step="0.01" min="0" value="0">
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>商品描述</label>
-                        <textarea class="form-control" rows="3"></textarea>
+                        <textarea id="item_description" class="form-control" rows="3" placeholder="请输入商品描述"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>商品图片</label>
+                        <input type="file" id="item_image" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">支持 jpg、png、gif、webp 格式，不超过 5MB</small>
                     </div>
                 </form>
             </div>
         `,
         btn: ['确定', '取消'],
         yes: function(index) {
-            layer.msg('添加成功', {icon: 1});
-            layer.close(index);
+            // 验证必填项
+            var name = $('#item_name').val();
+            var category = $('#item_category').val();
+            
+            if (!name || !category) {
+                layer.msg('请填写商品名称和类别', {icon: 2});
+                return;
+            }
+            
+            // 创建 FormData 对象
+            var formData = new FormData();
+            formData.append('name', name);
+            formData.append('category', category);
+            formData.append('price_stars', $('#item_price_stars').val());
+            formData.append('real_price', $('#item_real_price').val());
+            formData.append('description', $('#item_description').val());
+            
+            // 添加图片文件
+            var fileInput = document.getElementById('item_image');
+            if (fileInput.files[0]) {
+                formData.append('image', fileInput.files[0]);
+            }
+            
+            // 发送请求
+            $.ajax({
+                url: '/api/shop/item/add',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    if (res.success) {
+                        layer.msg('添加成功', {icon: 1});
+                        layer.close(index);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        layer.msg(res.message || '添加失败', {icon: 2});
+                    }
+                },
+                error: function(err) {
+                    layer.msg('添加失败：' + err.statusText, {icon: 2});
+                }
+            });
         }
     });
 }
 
 // 编辑商品
 function editItem(id) {
-    layer.msg('编辑商品：' + id, {icon: 0, time: 1500});
+    // 先获取商品详情
+    $.get('/api/shop/item/' + id, function(res) {
+        if (res.success) {
+            var item = res.data;
+            
+            layer.open({
+                type: 1,
+                title: '编辑商品',
+                area: ['700px', '650px'],
+                content: `
+                    <div style="padding: 20px;">
+                        <form id="editItemForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label>商品名称 <span style="color: red;">*</span></label>
+                                <input type="text" id="edit_item_name" class="form-control" value="${item.name}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>商品类别 <span style="color: red;">*</span></label>
+                                <select id="edit_item_category" class="form-control" required>
+                                    ${generateCategoryOptions(item.category)}
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>星星价格</label>
+                                        <input type="number" id="edit_item_price_stars" class="form-control" min="0" value="${item.price_stars}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>实际金额（元）</label>
+                                        <input type="number" id="edit_item_real_price" class="form-control" step="0.01" min="0" value="${item.real_price || 0}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>商品描述</label>
+                                <textarea id="edit_item_description" class="form-control" rows="3">${item.description || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>当前图片</label><br>
+                                ${item.image ? `<img src="${item.image}" style="max-width: 200px; border-radius: 4px;">` : '<div class="text-muted">无图片</div>'}
+                            </div>
+                            <div class="form-group">
+                                <label>更换图片（可选）</label>
+                                <input type="file" id="edit_item_image" class="form-control" accept="image/*">
+                                <small class="form-text text-muted">不选择则保持原图</small>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-check">
+                                    <input type="checkbox" id="edit_keep_image" class="form-check-input" checked>
+                                    <label class="form-check-label" for="edit_keep_image">保留原图片</label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                `,
+                btn: ['确定', '取消'],
+                yes: function(index) {
+                    var name = $('#edit_item_name').val();
+                    var category = $('#edit_item_category').val();
+                    
+                    if (!name || !category) {
+                        layer.msg('请填写商品名称和类别', {icon: 2});
+                        return;
+                    }
+                    
+                    var formData = new FormData();
+                    formData.append('name', name);
+                    formData.append('category', category);
+                    formData.append('price_stars', $('#edit_item_price_stars').val());
+                    formData.append('real_price', $('#edit_item_real_price').val());
+                    formData.append('description', $('#edit_item_description').val());
+                    
+                    // 处理图片
+                    var keepImage = $('#edit_keep_image').is(':checked');
+                    formData.append('keep_image', keepImage ? '1' : '0');
+                    
+                    var fileInput = document.getElementById('edit_item_image');
+                    if (fileInput.files[0]) {
+                        formData.append('image', fileInput.files[0]);
+                    }
+                    
+                    $.ajax({
+                        url: '/api/shop/item/' + id,
+                        type: 'PUT',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(res) {
+                            if (res.success) {
+                                layer.msg('更新成功', {icon: 1});
+                                layer.close(index);
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            } else {
+                                layer.msg(res.message || '更新失败', {icon: 2});
+                            }
+                        },
+                        error: function(err) {
+                            layer.msg('更新失败：' + err.statusText, {icon: 2});
+                        }
+                    });
+                }
+            });
+        } else {
+            layer.msg(res.message || '获取商品详情失败', {icon: 2});
+        }
+    });
 }
 
 // 上下架商品
-function toggleItem(id) {
-    layer.confirm('确定要切换商品上下架状态吗？', {icon: 3, title:'提示'}, function(index) {
-        layer.msg('操作成功', {icon: 1});
+function toggleItem(id, isActive) {
+    var actionText = isActive ? '下架' : '上架';
+    layer.confirm(`确定要${actionText}这个商品吗？`, {icon: 3, title:'提示'}, function(index) {
+        $.ajax({
+            url: '/api/shop/item/' + id + '/toggle-status',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({is_active: !isActive}),
+            success: function(res) {
+                if (res.success) {
+                    layer.msg(`${actionText}成功`, {icon: 1});
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    layer.msg(res.message || `${actionText}失败`, {icon: 2});
+                }
+            },
+            error: function(err) {
+                layer.msg(`${actionText}失败：` + err.statusText, {icon: 2});
+            }
+        });
         layer.close(index);
     });
 }
 
 // 删除商品
 function deleteItem(id) {
-    layer.confirm('确定要删除这个商品吗？', {icon: 3, title:'警告'}, function(index) {
-        layer.msg('删除成功', {icon: 1});
+    layer.confirm('确定要删除这个商品吗？此操作不可恢复！', {icon: 3, title:'警告'}, function(index) {
+        $.ajax({
+            url: '/api/shop/item/' + id,
+            type: 'DELETE',
+            success: function(res) {
+                if (res.success) {
+                    layer.msg('删除成功', {icon: 1});
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    layer.msg(res.message || '删除失败', {icon: 2});
+                }
+            },
+            error: function(err) {
+                layer.msg('删除失败：' + err.statusText, {icon: 2});
+            }
+        });
         layer.close(index);
     });
 }
 
-// 刷新数据
+// 刷新数据（已移除，保留函数防止报错）
 function refreshData() {
-    layer.msg('刷新数据...', {icon: 0, time: 1500});
     location.reload();
 }
 </script>

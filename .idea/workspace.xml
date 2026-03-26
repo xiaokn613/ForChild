@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作">
+    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制">
+      <change beforePath="$PROJECT_DIR$/.idea/ForChild.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ForChild.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/forchild.db" beforeDir="false" afterPath="$PROJECT_DIR$/forchild.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/prd.md" beforeDir="false" afterPath="$PROJECT_DIR$/prd.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/api_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/parent_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/parent_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/parent/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/statistics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/statistics.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/tasks.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/tasks.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/parent/shop.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/shop.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,21 +49,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "master",
+    "javascript.preferred.runtime.type.id": "node",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$" />
@@ -87,7 +87,9 @@
       <workItem from="1774405619511" duration="108000" />
       <workItem from="1774411199294" duration="16699000" />
       <workItem from="1774439294762" duration="1987000" />
-      <workItem from="1774449700874" duration="2823000" />
+      <workItem from="1774449700874" duration="3605000" />
+      <workItem from="1774453405112" duration="377000" />
+      <workItem from="1774515716924" duration="7471000" />
     </task>
     <task id="LOCAL-00001" summary="项目初始化">
       <option name="closed" value="true" />
@@ -113,7 +115,23 @@
       <option name="project" value="LOCAL" />
       <updated>1774415945460</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制">
+      <option name="closed" value="true" />
+      <created>1774452768040</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1774452768040</updated>
+    </task>
+    <task id="LOCAL-00005" summary="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制">
+      <option name="closed" value="true" />
+      <created>1774452837040</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1774452837040</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -133,6 +151,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="项目初始化" />
     <MESSAGE value="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作" />
+    <MESSAGE value="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制" />
   </component>
 </project>

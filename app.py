@@ -20,6 +20,17 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = 'forchild_secret_key_2026'  # 用于 session 加密
     
+    # 配置文件上传目录
+    import os
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads', 'shop')
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 限制上传文件大小为 5MB
+    
+    # 创建上传目录（如果不存在）
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    # 允许的文件扩展名
+    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+    
     # 添加字体文件的 MIME 类型
     app.config['MIMETYPES'] = [
         ('application/font-woff', 'woff'),

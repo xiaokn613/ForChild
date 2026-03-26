@@ -83,6 +83,19 @@ def shop():
         ORDER BY category, price_stars
     ''').fetchall()
     
+    # 获取商品类别字典
+    categories_raw = conn.execute('''
+        SELECT dict_key, dict_value 
+        FROM dictionaries 
+        WHERE dict_type = 'shop_category'
+        ORDER BY sort_order
+    ''').fetchall()
+    
+    # 构建类别字典：{key: value}
+    categories = {}
+    for row in categories_raw:
+        categories[row['dict_key']] = row['dict_value']
+    
     purchase_records = conn.execute('''
         SELECT pr.*, c.nickname as child_name, si.name as item_name
         FROM purchase_records pr
@@ -93,7 +106,7 @@ def shop():
     
     conn.close()
     
-    return render_template('parent/shop.html', items=items, purchase_records=purchase_records)
+    return render_template('parent/shop.html', items=items, purchase_records=purchase_records, categories=dict(categories))
 
 @bp.route('/statistics')
 def statistics():
@@ -156,3 +169,11 @@ def wishlists():
     conn.close()
     
     return render_template('parent/wishlists.html', children=children, wishlists=wishlists)
+
+@bp.route('/dictionaries')
+def dictionaries():
+    """字典管理页面"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return redirect(url_for('parent_routes.login'))
+    
+    return render_template('parent/dictionaries.html')

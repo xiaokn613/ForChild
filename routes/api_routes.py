@@ -9,6 +9,8 @@ from flask import Blueprint, jsonify, request, session
 from models import get_db_connection
 from datetime import datetime, timedelta
 import json
+import os
+from werkzeug.utils import secure_filename
 
 bp = Blueprint('api_routes', __name__)
 
@@ -1091,3 +1093,520 @@ def update_wishlist_progress():
     conn.close()
     
     return jsonify({'success': True, 'message': '进度更新成功'})
+
+# ==================== 商城管理（家长端） ====================
+
+def allowed_file(filename):
+    """检查文件扩展名是否允许"""
+    from flask import current_app
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+@bp.route('/shop/items', methods=['GET'])
+def get_shop_items_admin():
+    """获取商城物品列表（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    conn = get_db_connection()
+    items = conn.execute('''
+        SELECT * FROM shop_items 
+        ORDER BY is_active DESC, created_at DESC
+    ''').fetchall()
+    conn.close()
+    
+    return jsonify({
+        'success': True,
+        'data': [dict(item) for item in items]
+    })
+
+@bp.route('/shop/item/add', methods=['POST'])
+def add_shop_item():
+    """新增商品（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    data = request.form
+    name = data.get('name')
+    description = data.get('description', '')
+    category = data.get('category')
+    price_stars = data.get('price_stars', 0)
+    real_price = data.get('real_price', 0)
+    
+    # 验证必填项
+    if not name or not category:
+        return jsonify({
+            'success': False,
+            'message': '商品名称和类别为必填项'
+        }), 400
+    
+    # 处理图片上传
+    image_filename = None
+    if 'image' in request.files:
+        file = request.files['image']
+        if file and file.filename != '' and allowed_file(file.filename):
+            from flask import current_app
+            filename = secure_filename(file.filename)
+            # 使用时间戳生成唯一文件名
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            unique_filename = f"{timestamp}_{filename}"
+            file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename))
+            image_filename = f'/static/uploads/shop/{unique_filename}'
+    
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute('''
+            INSERT INTO shop_items (
+                name, description, category, price_stars, real_price, 
+                image, is_active
+            ) VALUES (?, ?, ?, ?, ?, ?, 1)
+        ''', (name, description, category, price_stars, real_price, image_filename))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '商品添加成功',
+            'data': {
+                'item_id': cursor.lastrowid
+            }
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'添加失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/shop/item/<int:item_id>', methods=['GET'])
+def get_shop_item(item_id):
+    """获取单个商品详情（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    conn = get_db_connection()
+    item = conn.execute('''
+        SELECT * FROM shop_items WHERE id = ?
+    ''', (item_id,)).fetchone()
+    conn.close()
+    
+    if item:
+        return jsonify({'success': True, 'data': dict(item)})
+    return jsonify({'success': False, 'message': '商品不存在'}), 404
+
+@bp.route('/shop/item/<int:item_id>', methods=['PUT'])
+def update_shop_item(item_id):
+    """更新商品（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    data = request.form
+    name = data.get('name')
+    description = data.get('description', '')
+    category = data.get('category')
+    
+    # 处理数字类型转换
+    try:
+        price_stars = int(data.get('price_stars', 0))
+        real_price = float(data.get('real_price', 0))
+    except (ValueError, TypeError) as e:
+        return jsonify({
+            'success': False,
+            'message': '价格格式不正确'
+        }), 400
+    
+    # 验证必填项
+    if not name or not category:
+        return jsonify({
+            'success': False,
+            'message': '商品名称和类别为必填项'
+        }), 400
+    
+    conn = get_db_connection()
+    try:
+        # 先获取原商品信息
+        old_item = conn.execute('''
+            SELECT * FROM shop_items WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if not old_item:
+            return jsonify({'success': False, 'message': '商品不存在'}), 404
+        
+        # 处理图片上传（如果上传了新图片）
+        image_filename = old_item['image']  # 默认使用原图片
+        keep_image = data.get('keep_image', '1') == '1'
+        
+        if not keep_image:
+            image_filename = None
+        
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                from flask import current_app
+                # 删除旧图片
+                if old_item['image']:
+                    old_image_path = os.path.join(
+                        os.path.dirname(os.path.abspath(__file__)), 
+                        '..', 
+                        old_item['image'][1:]  # 去掉开头的 '/'
+                    )
+                    if os.path.exists(old_image_path):
+                        os.remove(old_image_path)
+                
+                # 保存新图片
+                filename = secure_filename(file.filename)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                unique_filename = f"{timestamp}_{filename}"
+                file.save(os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename))
+                image_filename = f'/static/uploads/shop/{unique_filename}'
+        
+        # 更新商品信息
+        conn.execute('''
+            UPDATE shop_items 
+            SET name = ?, description = ?, category = ?, 
+                price_stars = ?, real_price = ?, 
+                image = ?
+            WHERE id = ?
+        ''', (name, description, category, price_stars, real_price, 
+              image_filename, item_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '商品更新成功'
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'更新失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/shop/item/<int:item_id>', methods=['DELETE'])
+def delete_shop_item(item_id):
+    """删除商品（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    conn = get_db_connection()
+    try:
+        # 获取商品信息
+        item = conn.execute('''
+            SELECT * FROM shop_items WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if not item:
+            return jsonify({'success': False, 'message': '商品不存在'}), 404
+        
+        # 删除图片文件
+        if item['image']:
+            image_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), 
+                '..', 
+                item['image'][1:]  # 去掉开头的 '/'
+            )
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        
+        # 删除商品记录
+        conn.execute('DELETE FROM shop_items WHERE id = ?', (item_id,))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '商品删除成功'
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'删除失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/shop/item/<int:item_id>/toggle-status', methods=['PUT'])
+def toggle_shop_item_status(item_id):
+    """切换商品上下架状态（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    data = request.json
+    is_active = data.get('is_active', False)
+    
+    conn = get_db_connection()
+    try:
+        # 验证商品是否存在
+        item = conn.execute('''
+            SELECT * FROM shop_items WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if not item:
+            return jsonify({'success': False, 'message': '商品不存在'}), 404
+        
+        # 更新状态
+        conn.execute('''
+            UPDATE shop_items SET is_active = ? WHERE id = ?
+        ''', (1 if is_active else 0, item_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '状态已更新'
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'更新失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+# ==================== 字典管理（家长端） ====================
+
+@bp.route('/dictionaries', methods=['GET'])
+def get_dictionaries():
+    """获取字典列表（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    dict_type = request.args.get('dict_type')  # 可选，按字典类型过滤
+    
+    conn = get_db_connection()
+    try:
+        if dict_type:
+            items = conn.execute('''
+                SELECT * FROM dictionaries 
+                WHERE dict_type = ?
+                ORDER BY sort_order, id
+            ''', (dict_type,)).fetchall()
+        else:
+            items = conn.execute('''
+                SELECT * FROM dictionaries 
+                ORDER BY dict_type, sort_order, id
+            ''').fetchall()
+        
+        return jsonify({
+            'success': True,
+            'data': [dict(item) for item in items]
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/dictionaries/<int:item_id>', methods=['GET'])
+def get_dictionary_item(item_id):
+    """获取单个字典项详情（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    conn = get_db_connection()
+    try:
+        item = conn.execute('''
+            SELECT * FROM dictionaries WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if item:
+            return jsonify({
+                'success': True,
+                'data': dict(item)
+            })
+        return jsonify({
+            'success': False,
+            'message': '字典项不存在'
+        }), 404
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/dictionaries/add', methods=['POST'])
+def add_dictionary_item():
+    """新增字典项（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    data = request.json
+    dict_type = data.get('dict_type')
+    dict_value = data.get('dict_value')
+    sort_order = data.get('sort_order', 0)
+    is_active = data.get('is_active', True)
+    remark = data.get('remark', '')
+    
+    # 验证必填项
+    if not dict_type or not dict_value:
+        return jsonify({
+            'success': False,
+            'message': '字典类型和字典值为必填项'
+        }), 400
+    
+    conn = get_db_connection()
+    try:
+        # 获取该类型下最大的 ID 后缀
+        # 使用更精确的匹配：只匹配 dict_type 相同的记录
+        max_result = conn.execute('''
+            SELECT MAX(CAST(SUBSTR(dict_key, LENGTH(?) + 2) AS INTEGER)) as max_id
+            FROM dictionaries 
+            WHERE dict_type = ? AND dict_key LIKE ? || '_%'
+        ''', (dict_type, dict_type, dict_type)).fetchone()
+        
+        max_id = max_result['max_id'] or 0
+        new_dict_key = f"{dict_type}_{max_id + 1}"
+        
+        # 检查是否已存在
+        existing = conn.execute('''
+            SELECT id FROM dictionaries 
+            WHERE dict_type = ? AND dict_value = ?
+        ''', (dict_type, dict_value)).fetchone()
+        
+        if existing:
+            return jsonify({
+                'success': False,
+                'message': '该字典值已存在'
+            }), 400
+        
+        cursor = conn.execute('''
+            INSERT INTO dictionaries (
+                dict_type, dict_value, dict_key, sort_order, is_active, remark
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        ''', (dict_type, dict_value, new_dict_key, sort_order, 1 if is_active else 0, remark))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '字典项添加成功',
+            'data': {
+                'id': cursor.lastrowid,
+                'dict_key': new_dict_key
+            }
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'添加失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/dictionaries/<int:item_id>', methods=['PUT'])
+def update_dictionary_item(item_id):
+    """更新字典项（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    data = request.json
+    dict_type = data.get('dict_type')
+    dict_value = data.get('dict_value')
+    sort_order = data.get('sort_order', 0)
+    is_active = data.get('is_active', True)
+    remark = data.get('remark', '')
+    
+    # 验证必填项
+    if not dict_type or not dict_value:
+        return jsonify({
+            'success': False,
+            'message': '字典类型和字典值为必填项'
+        }), 400
+    
+    conn = get_db_connection()
+    try:
+        # 验证字典项是否存在
+        old_item = conn.execute('''
+            SELECT * FROM dictionaries WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if not old_item:
+            return jsonify({'success': False, 'message': '字典项不存在'}), 404
+        
+        # 不允许修改字典类型
+        if dict_type != old_item['dict_type']:
+            return jsonify({
+                'success': False,
+                'message': '不允许修改字典类型'
+            }), 400
+        
+        # 如果值有变化，检查新值是否已被使用
+        if dict_value != old_item['dict_value']:
+            existing = conn.execute('''
+                SELECT id FROM dictionaries 
+                WHERE dict_type = ? AND dict_value = ? AND id != ?
+            ''', (dict_type, dict_value, item_id)).fetchone()
+            
+            if existing:
+                return jsonify({
+                    'success': False,
+                    'message': '该字典值已存在'
+                }), 400
+        
+        # 更新字典项（dict_key 保持不变）
+        conn.execute('''
+            UPDATE dictionaries 
+            SET dict_value = ?, sort_order = ?, 
+                is_active = ?, remark = ?
+            WHERE id = ?
+        ''', (dict_value, sort_order, 1 if is_active else 0, remark, item_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '字典项更新成功'
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'更新失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+
+@bp.route('/dictionaries/<int:item_id>', methods=['DELETE'])
+def delete_dictionary_item(item_id):
+    """删除字典项（家长端）"""
+    if 'user_id' not in session or session.get('role') != 'parent':
+        return jsonify({'success': False, 'message': '未登录或无权限'}), 401
+    
+    conn = get_db_connection()
+    try:
+        # 验证字典项是否存在
+        item = conn.execute('''
+            SELECT * FROM dictionaries WHERE id = ?
+        ''', (item_id,)).fetchone()
+        
+        if not item:
+            return jsonify({'success': False, 'message': '字典项不存在'}), 404
+        
+        # 删除字典项
+        conn.execute('DELETE FROM dictionaries WHERE id = ?', (item_id,))
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '字典项删除成功'
+        })
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'删除失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
+

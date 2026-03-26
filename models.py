@@ -143,10 +143,10 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
                 description TEXT,
-                category TEXT CHECK(category IN ('food', 'cleaning', 'mood', 'decoration', 'physical')) NOT NULL,
+                category TEXT NOT NULL,  -- 使用字典管理的类别（如：shop_category_1）
                 price_stars INTEGER DEFAULT 0,
+                real_price DECIMAL(10,2) DEFAULT 0,
                 image TEXT,
-                effect_value INTEGER DEFAULT 0,
                 is_active BOOLEAN DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
@@ -269,6 +269,24 @@ def init_db():
             )
         ''')
         
+        # 16. 字典表
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS dictionaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                dict_type TEXT NOT NULL,           -- 字典类型（如：shop_category）
+                dict_value TEXT NOT NULL,          -- 字典值显示名称（如：食品）
+                dict_key TEXT NOT NULL,            -- 字典键（自动生成，如：shop_category_1）
+                sort_order INTEGER DEFAULT 0,      -- 排序
+                is_active BOOLEAN DEFAULT 1,       -- 状态
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                remark TEXT,                       -- 备注
+                UNIQUE(dict_type, dict_key)
+            )
+        ''')
+        
+        # 为 dictionaries 表创建索引
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_dictionaries_dict_type ON dictionaries(dict_type)')
+        
         # 插入默认数据 - 示例用户
         cursor.execute("SELECT COUNT(*) FROM users")
         if cursor.fetchone()[0] == 0:
@@ -322,16 +340,16 @@ def init_db():
             
             # 插入默认商城物品
             cursor.execute('''
-                INSERT INTO shop_items (name, description, category, price_stars, effect_value)
+                INSERT INTO shop_items (name, description, category, price_stars, real_price)
                 VALUES 
-                ('宠物粮食', '增加宠物饱腹度 30 点', 'food', 10, 30),
-                ('高级零食', '增加宠物饱腹度 50 点', 'food', 20, 50),
-                ('清洁泡泡', '增加宠物清洁度 30 点', 'cleaning', 15, 30),
-                ('深度清洁', '增加宠物清洁度 60 点', 'cleaning', 30, 60),
-                ('开心果', '增加宠物心情 30 点', 'mood', 20, 30),
-                ('游乐园门票', '增加宠物心情 60 点', 'mood', 40, 60),
-                ('小窝', '宠物休息用品', 'decoration', 100, 0),
-                ('玩具球', '宠物玩具', 'decoration', 50, 0)
+                ('宠物粮食', '增加宠物饱腹度 30 点', 'shop_category_1', 10, 9.9),
+                ('高级零食', '增加宠物饱腹度 50 点', 'shop_category_1', 20, 19.9),
+                ('清洁泡泡', '增加宠物清洁度 30 点', 'shop_category_2', 15, 12.9),
+                ('深度清洁', '增加宠物清洁度 60 点', 'shop_category_2', 30, 25.9),
+                ('开心果', '增加宠物心情 30 点', 'shop_category_3', 20, 15.9),
+                ('游乐园门票', '增加宠物心情 60 点', 'shop_category_3', 40, 35.9),
+                ('小窝', '宠物休息用品', 'shop_category_4', 100, 89.9),
+                ('玩具球', '宠物玩具', 'shop_category_4', 50, 45.9)
             ''')
             
             # 插入默认徽章
@@ -351,6 +369,17 @@ def init_db():
                 ('完美一周', '连续 7 天完成所有日常任务', '🏆', '7 天全满贯', 100),
                 ('月度之星', '一个月内获得 1000 星星', '⭐', '月获 1000 星', 200),
                 ('宠物大师', '将宠物培养到满级', '👑', '宠物满级', 500)
+            ''')
+            
+            # 插入默认字典数据 - 商品类别
+            cursor.execute('''
+                INSERT INTO dictionaries (dict_type, dict_value, dict_key, sort_order, remark)
+                VALUES 
+                ('shop_category', '食品', 'shop_category_1', 1, '商品类型 - 食品'),
+                ('shop_category', '清洁', 'shop_category_2', 2, '商品类型 - 清洁'),
+                ('shop_category', '心情', 'shop_category_3', 3, '商品类型 - 心情'),
+                ('shop_category', '装饰', 'shop_category_4', 4, '商品类型 - 装饰'),
+                ('shop_category', '实物', 'shop_category_5', 5, '商品类型 - 实物')
             ''')
         
         conn.commit()
