@@ -1,0 +1,279 @@
+{% extends 'parent/layout.html' %}
+
+{% block title %}字典管理{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2><i class="fas fa-book me-2"></i>字典管理</h2>
+            <p class="text-muted">管理系统中的各类字典配置项</p>
+        </div>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="toolbar mb-4">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="showAddModal()">
+                <i class="fas fa-plus"></i> 新增字典项
+            </button>
+        </div>
+    </div>
+
+    <!-- 字典列表 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">字典项列表</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>字典类型</th>
+                            <th>字典值</th>
+                            <th>字典键</th>
+                            <th>排序</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dictionaryList">
+                        <!-- 动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 新增/编辑模态框 -->
+<div class="modal fade" id="dictionaryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">新增字典项</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dictionaryForm">
+                    <input type="hidden" id="itemId">
+                    <div class="mb-3">
+                        <label for="dictType" class="form-label">字典类型 <span style="color: red;">*</span></label>
+                        <select class="form-select" id="dictType" required>
+                            <option value="shop_category">商品类别</option>
+                            <option value="pet_species">宠物物种</option>
+                        </select>
+                        <small class="form-text text-muted">字典类型为系统预设，不可编辑</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dictValue" class="form-label">字典值 <span style="color: red;">*</span></label>
+                        <input type="text" class="form-control" id="dictValue" required placeholder="如：食品">
+                    </div>
+                    <div class="mb-3">
+                        <label for="sortOrder" class="form-label">排序</label>
+                        <input type="number" class="form-control" id="sortOrder" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="remark" class="form-label">备注</label>
+                        <textarea class="form-control" id="remark" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isActive" checked>
+                        <label class="form-check-label" for="isActive">启用</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveDictionary()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 页面加载时获取字典列表
+document.addEventListener('DOMContentLoaded', function() {
+    loadDictionaries();
+});
+
+// 加载字典列表
+async function loadDictionaries() {
+    try {
+        const response = await fetch('/api/dictionaries');
+        const result = await response.json();
+        
+        if (result.success) {
+            renderDictionaryList(result.data);
+        } else {
+            layer.msg('加载失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('加载字典失败:', error);
+        layer.msg('加载失败');
+    }
+}
+
+// 渲染字典列表
+function renderDictionaryList(items) {
+    const tbody = document.getElementById('dictionaryList');
+    
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">暂无数据</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = items.map(item => {
+        return `
+            <tr>
+                <td>${item.id}</td>
+                <td><code>${escapeHtml(item.dict_type)}</code></td>
+                <td>${escapeHtml(item.dict_value)}</td>
+                <td><code>${escapeHtml(item.dict_key)}</code></td>
+                <td>${item.sort_order}</td>
+                <td>
+                    <span class="badge bg-${item.is_active ? 'success' : 'secondary'}">
+                        ${item.is_active ? '启用' : '禁用'}
+                    </span>
+                </td>
+                <td>${escapeHtml(item.remark || '')}</td>
+                <td>${item.created_at}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editDictionary(${item.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDictionary(${item.id}, '${escapeHtml(item.dict_type)}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 显示新增模态框
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = '新增字典项';
+    document.getElementById('itemId').value = '';
+    document.getElementById('dictionaryForm').reset();
+    document.getElementById('dictType').value = 'shop_category';
+    document.getElementById('dictType').disabled = false;
+    
+    new bootstrap.Modal(document.getElementById('dictionaryModal')).show();
+}
+
+// 编辑字典项
+async function editDictionary(id) {
+    try {
+        const response = await fetch(`/api/dictionaries/${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const item = result.data;
+            
+            document.getElementById('modalTitle').textContent = '编辑字典项';
+            document.getElementById('itemId').value = item.id;
+            document.getElementById('dictType').value = item.dict_type;
+            document.getElementById('dictValue').value = item.dict_value;
+            document.getElementById('sortOrder').value = item.sort_order;
+            document.getElementById('remark').value = item.remark || '';
+            document.getElementById('isActive').checked = item.is_active;
+            
+            // 编辑时不允许修改字典类型
+            document.getElementById('dictType').disabled = true;
+            
+            new bootstrap.Modal(document.getElementById('dictionaryModal')).show();
+        } else {
+            layer.msg('获取详情失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('获取详情失败:', error);
+        layer.msg('获取详情失败');
+    }
+}
+
+// 保存字典项
+async function saveDictionary() {
+    const id = document.getElementById('itemId').value;
+    const dictType = document.getElementById('dictType').value;
+    const dictValue = document.getElementById('dictValue').value;
+    const sortOrder = document.getElementById('sortOrder').value;
+    const isActive = document.getElementById('isActive').checked;
+    const remark = document.getElementById('remark').value;
+    
+    // 验证必填项
+    if (!dictType || !dictValue) {
+        layer.msg('请填写所有必填项');
+        return;
+    }
+    
+    const url = id ? `/api/dictionaries/${id}` : '/api/dictionaries/add';
+    const method = id ? 'PUT' : 'POST';
+    
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                dict_type: dictType,
+                dict_value: dictValue,
+                sort_order: parseInt(sortOrder),
+                is_active: isActive,
+                remark: remark
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            layer.msg(id ? '更新成功' : '添加成功');
+            bootstrap.Modal.getInstance(document.getElementById('dictionaryModal')).hide();
+            loadDictionaries();
+        } else {
+            layer.msg('操作失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('保存失败:', error);
+        layer.msg('保存失败');
+    }
+}
+
+// 删除字典项
+async function deleteDictionary(id, dictType) {
+    if (!confirm('确定要删除该字典项吗？')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/dictionaries/${id}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            layer.msg('删除成功');
+            loadDictionaries();
+        } else {
+            layer.msg('删除失败：' + result.message);
+        }
+    } catch (error) {
+        console.error('删除失败:', error);
+        layer.msg('删除失败');
+    }
+}
+
+// HTML 转义函数
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}
