@@ -214,6 +214,7 @@
     <div class="shop-content">
         <div class="category-tabs">
             <div class="tab-item active" onclick="filterCategory('all')">全部</div>
+            <div class="tab-item" onclick="filterCategory('pet')">🐶 宠物领养</div>
             <div class="tab-item" onclick="filterCategory('food')">🍖 食物</div>
             <div class="tab-item" onclick="filterCategory('cleaning')">✨ 清洁</div>
             <div class="tab-item" onclick="filterCategory('mood')">😊 心情</div>
@@ -251,6 +252,7 @@
 
 <script>
     const itemsData = {{ items | tojson }};
+    const petsData = {{ pets | tojson }};
     let currentCategory = 'all';
 
     function filterCategory(category) {
@@ -267,7 +269,21 @@
         let filtered = itemsData;
         
         if (currentCategory !== 'all') {
-            filtered = itemsData.filter(item => item.category === currentCategory);
+            if (currentCategory === 'pet') {
+                // 宠物领养分类
+                container.innerHTML = petsData.map(pet => `
+                    <div class="item-card" onclick="adoptPet(${pet.id})">
+                        <div class="item-icon">🐾</div>
+                        <div class="item-name">${pet.breed_name}</div>
+                        <div class="item-desc">${pet.description || ''}</div>
+                        <div class="item-price">💫 ${pet.adoption_fee} 星星</div>
+                    </div>
+                `).join('');
+                return;
+            } else {
+                // 其他商品分类
+                filtered = itemsData.filter(item => item.category === currentCategory);
+            }
         }
 
         const icons = {
@@ -316,6 +332,35 @@
             }
         } catch (error) {
             alert('操作失败，请稍后重试');
+        }
+    }
+
+    async function adoptPet(petId) {
+        const pet = petsData.find(p => p.id === petId);
+        if (!confirm(`确定要领养"${pet.breed_name}"吗？将消耗${pet.adoption_fee}颗星星`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/pet_store/${petId}/adopt`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showToast('✅ ' + data.message);
+                // 更新星星显示
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('领养失败，请稍后重试');
         }
     }
 

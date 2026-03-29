@@ -1,21 +1,21 @@
 {% extends "parent/layout.html" %}
 
-{% block title %}宠物管理 - 家长端{% endblock %}
+{% block title %}宠物商城 - 家长端{% endblock %}
 
 {% block content %}
 <!-- 面包屑导航 -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
-        <li class="breadcrumb-item active" aria-current="page">宠物管理</li>
+        <li class="breadcrumb-item active" aria-current="page">宠物商城</li>
     </ol>
 </nav>
 
 <!-- 工具栏 -->
 <div class="toolbar">
     <div class="btn-group">
-        <button type="button" class="btn btn-primary" onclick="addPet()">
-            <i class="fas fa-plus"></i> 新增宠物
+        <button type="button" class="btn btn-primary" onclick="addPetBreed()">
+            <i class="fas fa-plus"></i> 新增宠物品种
         </button>
         <button type="button" class="btn btn-info" onclick="refreshData()">
             <i class="fas fa-sync"></i> 刷新
@@ -23,95 +23,66 @@
     </div>
 </div>
 
-<!-- 宠物列表 -->
+<!-- 宠物商城列表 -->
 <div class="card">
     <div class="card-header">
-        <i class="fas fa-paw"></i> 宠物列表
+        <i class="fas fa-store"></i> 宠物商城
     </div>
     <div class="card-body">
         <table class="table table-hover">
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>宠物头像</th>
-                    <th>名称</th>
-                    <th>类型</th>
-                    <th>等级</th>
-                    <th>主人</th>
-                    <th>饱腹度</th>
-                    <th>清洁度</th>
-                    <th>心情值</th>
+                    <th>宠物图片</th>
+                    <th>品种名称</th>
+                    <th>物种类型</th>
+                    <th>宠物描述</th>
+                    <th>领养费用</th>
+                    <th>状态</th>
                     <th>创建时间</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
-                {% for pet in pets %}
+                {% for item in pet_store_items %}
                 <tr>
-                    <td>{{ pet.id }}</td>
+                    <td>{{ item.id }}</td>
                     <td style="font-size: 32px;">
-                        {% if pet.type == 'dog' %}🐶
-                        {% elif pet.type == 'cat' %}🐱
-                        {% elif pet.type == 'pig' %}🐷
-                        {% else %}🐾
-                        {% endif %}
-                    </td>
-                    <td><strong>{{ pet.name }}</strong></td>
-                    <td>
-                        {% if pet.type == 'dog' %}
-                        <span class="badge badge-info">🐕 狗</span>
-                        {% elif pet.type == 'cat' %}
-                        <span class="badge badge-info">🐈 猫</span>
-                        {% elif pet.type == 'pig' %}
-                        <span class="badge badge-info">🐖 猪</span>
+                        {% if item.image %}
+                        <img src="{{ item.image }}" style="width: 100px; height: 100px; object-fit: contain; border-radius: 8px; cursor: pointer; background-color: #f8f9fa;" alt="宠物" onclick="viewImage('{{ item.image }}')">
                         {% else %}
-                        <span class="badge badge-secondary">{{ pet.type }}</span>
+                        🐾
                         {% endif %}
                     </td>
-                    <td><span class="badge badge-warning">Lv.{{ pet.level }}</span></td>
-                    <td>{{ pet.child_name }}</td>
+                    <td><strong>{{ item.breed_name }}</strong></td>
                     <td>
-                        <div class="progress" style="width: 100px; height: 20px;">
-                            <div class="progress-bar bg-success" role="progressbar" 
-                                 style="width: {{ pet.hunger }}%;" 
-                                 aria-valuenow="{{ pet.hunger }}" 
-                                 aria-valuemin="0" aria-valuemax="100">
-                                {{ pet.hunger }}%
-                            </div>
-                        </div>
+                        {% if item.species %}
+                        <span class="badge badge-info">{{ pet_species.get(item.species, item.species) }}</span>
+                        {% else %}
+                        <span class="badge badge-secondary">未分类</span>
+                        {% endif %}
                     </td>
+                    <td>{{ item.description or '-' }}</td>
+                    <td><span class="badge badge-warning"><i class="fas fa-star"></i> {{ item.adoption_fee }}</span></td>
                     <td>
-                        <div class="progress" style="width: 100px; height: 20px;">
-                            <div class="progress-bar bg-info" role="progressbar" 
-                                 style="width: {{ pet.cleanliness }}%;" 
-                                 aria-valuenow="{{ pet.cleanliness }}" 
-                                 aria-valuemin="0" aria-valuemax="100">
-                                {{ pet.cleanliness }}%
-                            </div>
-                        </div>
+                        {% if item.is_active %}
+                        <span class="badge badge-success">上架中</span>
+                        {% else %}
+                        <span class="badge badge-secondary">已下架</span>
+                        {% endif %}
                     </td>
+                    <td>{{ item.created_at }}</td>
                     <td>
-                        <div class="progress" style="width: 100px; height: 20px;">
-                            <div class="progress-bar bg-warning" role="progressbar" 
-                                 style="width: {{ pet.mood }}%;" 
-                                 aria-valuenow="{{ pet.mood }}" 
-                                 aria-valuemin="0" aria-valuemax="100">
-                                {{ pet.mood }}%
-                            </div>
-                        </div>
-                    </td>
-                    <td>{{ pet.created_at }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="viewPet({{ pet.id }})" title="详情">
-                            <i class="fas fa-eye"></i>
+                        <button class="btn btn-sm btn-success" onclick="assignPet({{ item.id }})" title="分配">
+                            <i class="fas fa-heart"></i>
                         </button>
-                        <button class="btn btn-sm btn-success" onclick="feedPet({{ pet.id }})" title="喂食">
-                            <i class="fas fa-utensils"></i>
+                        <button class="btn btn-sm btn-info" onclick="editPetBreed({{ item.id }})" title="编辑">
+                            <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-info" onclick="cleanPet({{ pet.id }})" title="清洁">
-                            <i class="fas fa-shower"></i>
+                        <button class="btn btn-sm btn-{{ 'warning' if item.is_active else 'success' }}" onclick="togglePetBreed({{ item.id }}, {{ item.is_active }})" title="{{ '下架' if item.is_active else '上架' }}">
+                            <i class="fas fa-{{ 'toggle-on' if item.is_active else 'toggle-off' }}"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deletePet({{ pet.id }})" title="删除">
+                        <button class="btn btn-sm btn-danger" onclick="deletePetBreed({{ item.id }})" title="删除">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -125,79 +96,463 @@
 
 {% block extra_js %}
 <script>
-// 新增宠物
-function addPet() {
+// 新增宠物品种
+function addPetBreed() {
+    // 生成物种选项
+    var speciesOptions = '';
+    {% for key, value in pet_species.items() %}
+    speciesOptions += '<option value="{{ key }}">{{ value }}</option>';
+    {% endfor %}
+    
     layer.open({
         type: 1,
-        title: '新增宠物',
-        area: ['600px', '500px'],
+        title: '新增宠物品种',
+        area: ['600px', '600px'],
         content: `
             <div style="padding: 20px;">
-                <form id="addPetForm">
-                    <div class="form-group">
-                        <label>宠物名称</label>
-                        <input type="text" class="form-control" required>
+                <form id="addPetBreedForm">
+                    <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                        <img id="breedImagePreview" src="/static/images/default-pet.png" 
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22%3E🐾%3C/text%3E%3C/svg%3E'"
+                             style="width: 120px; height: 120px; object-fit: contain; border-radius: 8px; cursor: pointer; border: 3px solid #e8eaec; background-color: #f8f9fa;" 
+                             alt="点击上传图片"
+                             onclick="document.getElementById('breedImageInput').click()">
+                        <input type="file" id="breedImageInput" accept="image/*" style="display: none;" onchange="previewBreedImage(this)">
+                        <p style="margin-top: 10px; color: #909399; font-size: 12px;">点击上传图片（支持 png、jpg、jpeg、gif、webp）</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>物种类型 <span style="color: red;">*</span></label>
+                                <select class="form-control" id="species" required>
+                                    <option value="">请选择物种</option>
+                                    ${speciesOptions}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>品种名称 <span style="color: red;">*</span></label>
+                                <input type="text" class="form-control" id="breedName" required>
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>宠物类型</label>
-                        <select class="form-control">
-                            <option value="pig">🐷 小猪</option>
-                            <option value="dog">🐶 小狗</option>
-                            <option value="cat">🐱 小猫</option>
-                        </select>
+                        <label>宠物描述</label>
+                        <textarea class="form-control" id="breedDescription" rows="3"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>选择主人</label>
-                        <select class="form-control">
-                            {% for child in children|default([]) %}
-                            <option value="{{ child.id }}">{{ child.nickname }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>性别</label>
-                        <select class="form-control">
-                            <option value="male">雄性</option>
-                            <option value="female">雌性</option>
-                        </select>
+                        <label>领养费用（星星）</label>
+                        <input type="number" class="form-control" id="adoptionFee" required min="0">
                     </div>
                 </form>
             </div>
         `,
         btn: ['确定', '取消'],
         yes: function(index) {
-            layer.msg('添加成功', {icon: 1});
-            layer.close(index);
+            submitAddPetBreed(index);
+        },
+        success: function(layero) {
+            console.log('新增宠物品种弹出层已打开');
         }
     });
 }
 
-// 查看宠物详情
-function viewPet(id) {
-    layer.msg('查看宠物详情：' + id, {icon: 0, time: 1500});
+// 预览宠物图片
+function previewBreedImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#breedImagePreview').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
 }
 
-// 喂食宠物
-function feedPet(id) {
-    layer.prompt({title: '输入喂食数量', formType: 0}, function(value, index) {
-        layer.msg('喂食成功', {icon: 1});
-        layer.close(index);
+// 提交新增宠物品种数据
+function submitAddPetBreed(layerIndex) {
+    var species = $('#species').val().trim();
+    var breedName = $('#breedName').val().trim();
+    var breedDescription = $('#breedDescription').val().trim();
+    var adoptionFee = parseInt($('#adoptionFee').val()) || 0;
+    var imageData = $('#breedImagePreview').attr('src');
+    
+    // 验证必填项
+    if (!species) {
+        layer.msg('请选择物种类型', {icon: 2, time: 1500});
+        return;
+    }
+    if (!breedName) {
+        layer.msg('请输入品种名称', {icon: 2, time: 1500});
+        return;
+    }
+    
+    layer.load(1);
+    
+    // 如果是 base64 图片，需要上传
+    if (imageData.startsWith('data:image')) {
+        // 创建 FormData 对象
+        var formData = new FormData();
+        formData.append('species', species);
+        formData.append('name', breedName);
+        formData.append('description', breedDescription);
+        formData.append('adoption_fee', adoptionFee);
+        
+        // 将 base64 转为 File
+        var blob = dataURItoBlob(imageData);
+        var file = new File([blob], 'pet_image.jpg', {type: 'image/jpeg'});
+        formData.append('image', file);
+        
+        fetch('/api/pet_store/add', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg('添加成功！', {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg('添加失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
+    } else {
+        // 使用默认图片
+        fetch('/api/pet_store/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                species: species,
+                name: breedName,
+                description: breedDescription,
+                adoption_fee: adoptionFee,
+                image: null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg('添加成功！', {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg('添加失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
+    }
+}
+
+// base64 转 Blob
+function dataURItoBlob(dataURI) {
+    var byteString = atob(dataURI.split(',')[1]);
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], {type: mimeString});
+}
+
+// 查看宠物品种详情
+function viewPetBreed(id) {
+    layer.msg('查看宠物品种详情：' + id, {icon: 0, time: 1500});
+}
+
+// 家长分配宠物给孩子
+function assignPet(id) {
+    layer.prompt({title: '输入要赠送的孩子姓名或昵称', formType: 0, value: ''}, function(value, index) {
+        if (!value || !value.trim()) {
+            layer.msg('请输入孩子姓名或昵称', {icon: 2, time: 1500});
+            return;
+        }
+        
+        layer.load(1);
+        fetch(`/api/pet_store/${id}/assign`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                child_name: value.trim()
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg(data.message, {icon: 1, time: 2000});
+                setTimeout(function() {
+                    location.reload();
+                }, 2000);
+            } else {
+                layer.msg('分配失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
     });
 }
 
-// 清洁宠物
-function cleanPet(id) {
-    layer.confirm('确定要给宠物洗澡吗？', {icon: 3, title:'提示'}, function(index) {
-        layer.msg('清洁成功', {icon: 1});
-        layer.close(index);
+// 上下架切换
+function togglePetBreed(id, isActive) {
+    var action = isActive ? '下架' : '上架';
+    layer.confirm(`确定要${action}这个宠物品种吗？`, {icon: 3, title:'提示'}, function(index) {
+        layer.load(1);
+        fetch(`/api/pet_store/${id}/toggle`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                is_active: !isActive
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg(`${action}成功！`, {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg(`${action}失败：` + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
     });
 }
 
-// 删除宠物
-function deletePet(id) {
-    layer.confirm('确定要删除这个宠物吗？', {icon: 3, title:'警告'}, function(index) {
-        layer.msg('删除成功', {icon: 1});
-        layer.close(index);
+// 编辑宠物品种
+function editPetBreed(id) {
+    // 生成物种选项
+    var speciesOptions = '';
+    {% for key, value in pet_species.items() %}
+    speciesOptions += '<option value="{{ key }}">{{ value }}</option>';
+    {% endfor %}
+    
+    layer.load(1);
+    fetch(`/api/pet_store/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                const item = data.data;
+                layer.open({
+                    type: 1,
+                    title: '编辑宠物品种',
+                    area: ['600px', '650px'],
+                    content: `
+                        <div style="padding: 20px;">
+                            <form id="editPetBreedForm">
+                                <input type="hidden" id="editItemId" value="${item.id}">
+                                <div class="form-group" style="text-align: center; margin-bottom: 20px;">
+                                    <img id="editBreedImagePreview" src="${item.image || '/static/images/default-pet.png'}" 
+                                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22%3E🐾%3C/text%3E%3C/svg%3E'"
+                                         style="width: 200px; height: 200px; object-fit: contain; border-radius: 8px; cursor: pointer; border: 3px solid #e8eaec; background-color: #f8f9fa;" 
+                                         alt="点击上传图片"
+                                         onclick="document.getElementById('editBreedImageInput').click()">
+                                    <input type="file" id="editBreedImageInput" accept="image/*" style="display: none;" onchange="previewEditBreedImage(this)">
+                                    <p style="margin-top: 10px; color: #909399; font-size: 12px;">点击上传图片（支持 png、jpg、jpeg、gif、webp）</p>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>物种类型 <span style="color: red;">*</span></label>
+                                            <select class="form-control" id="editSpecies" required>
+                                                ${speciesOptions}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>品种名称 <span style="color: red;">*</span></label>
+                                            <input type="text" class="form-control" id="editBreedName" value="${item.breed_name}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>宠物描述</label>
+                                    <textarea class="form-control" id="editBreedDescription" rows="3">${item.description || ''}</textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>领养费用（星星）</label>
+                                    <input type="number" class="form-control" id="editAdoptionFee" value="${item.adoption_fee}" required min="0">
+                                </div>
+                            </form>
+                        </div>
+                    `,
+                    btn: ['保存修改', '取消'],
+                    yes: function(index) {
+                        submitEditPetBreed(index);
+                    },
+                    success: function(layero) {
+                        // 设置物种选中值
+                        if (item.species) {
+                            $('#editSpecies').val(item.species);
+                        }
+                    }
+                });
+            } else {
+                layer.msg('获取详情失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
+}
+
+// 预览编辑时的图片
+function previewEditBreedImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $('#editBreedImagePreview').attr('src', e.target.result);
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// 提交编辑宠物品种数据
+function submitEditPetBreed(layerIndex) {
+    var itemId = $('#editItemId').val();
+    var species = $('#editSpecies').val().trim();
+    var breedName = $('#editBreedName').val().trim();
+    var breedDescription = $('#editBreedDescription').val().trim();
+    var adoptionFee = parseInt($('#editAdoptionFee').val()) || 0;
+    var imageData = $('#editBreedImagePreview').attr('src');
+    
+    // 验证必填项
+    if (!species) {
+        layer.msg('请选择物种类型', {icon: 2, time: 1500});
+        return;
+    }
+    if (!breedName) {
+        layer.msg('请输入品种名称', {icon: 2, time: 1500});
+        return;
+    }
+    
+    layer.load(1);
+    
+    // 如果是 base64 图片，需要上传
+    if (imageData.startsWith('data:image')) {
+        var formData = new FormData();
+        formData.append('species', species);
+        formData.append('name', breedName);
+        formData.append('description', breedDescription);
+        formData.append('adoption_fee', adoptionFee);
+        
+        var blob = dataURItoBlob(imageData);
+        var file = new File([blob], 'pet_image.jpg', {type: 'image/jpeg'});
+        formData.append('image', file);
+        
+        fetch(`/api/pet_store/${itemId}`, {
+            method: 'PUT',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg('修改成功！', {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg('修改失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
+    } else {
+        // 使用原有图片或无图片
+        fetch(`/api/pet_store/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                species: species,
+                name: breedName,
+                description: breedDescription,
+                adoption_fee: adoptionFee,
+                image: imageData.includes('/static/uploads/shop/') ? imageData : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg('修改成功！', {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg('修改失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
+    }
+}
+
+// 删除宠物品种
+function deletePetBreed(id) {
+    layer.confirm('确定要删除这个宠物品种吗？此操作不可恢复！', {icon: 3, title:'警告'}, function(index) {
+        layer.load(1);
+        fetch(`/api/pet_store/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.closeAll('loading');
+            if (data.success) {
+                layer.msg('删除成功！', {icon: 1, time: 1500});
+                setTimeout(function() {
+                    location.reload();
+                }, 1500);
+            } else {
+                layer.msg('删除失败：' + data.message, {icon: 2, time: 2000});
+            }
+        })
+        .catch(error => {
+            layer.closeAll('loading');
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {icon: 2, time: 2000});
+        });
     });
 }
 

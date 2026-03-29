@@ -13,7 +13,7 @@ bp = Blueprint('parent_routes', __name__, template_folder='templates')
 @bp.route('/login')
 def login():
     """家长登录页面"""
-    return render_template('parent/login.html')
+    return redirect(url_for('child_routes.login'))
 
 @bp.route('/dashboard')
 def dashboard():
@@ -43,13 +43,26 @@ def dashboard():
         WHERE task_date = ? AND status = 'completed'
     ''', (datetime.now().strftime('%Y-%m-%d'),)).fetchone()[0]
     
+    # 获取宠物领养关系
+    adoptions = conn.execute('''
+        SELECT p.*, c.nickname as child_name, ps.breed_name, ps.species,
+               d.dict_value as species_name
+        FROM pets p
+        JOIN children c ON p.child_id = c.id
+        LEFT JOIN pet_store ps ON p.type = ps.species AND p.name = ps.breed_name
+        LEFT JOIN dictionaries d ON d.dict_type = 'pet_species' AND d.dict_key = ps.species
+        WHERE c.parent_id = ?
+        ORDER BY p.created_at DESC
+    ''', (session['user_id'],)).fetchall()
+    
     conn.close()
     
     return render_template('parent/dashboard.html', 
                          children=children,
                          total_children=total_children,
                          total_tasks=total_tasks,
-                         completed_tasks=completed_tasks)
+                         completed_tasks=completed_tasks,
+                         adoptions=adoptions)
 
 @bp.route('/tasks')
 def tasks():
@@ -96,17 +109,9 @@ def shop():
     for row in categories_raw:
         categories[row['dict_key']] = row['dict_value']
     
-    purchase_records = conn.execute('''
-        SELECT pr.*, c.nickname as child_name, si.name as item_name
-        FROM purchase_records pr
-        JOIN children c ON pr.child_id = c.id
-        JOIN shop_items si ON pr.item_id = si.id
-        ORDER BY pr.created_at DESC
-    ''').fetchall()
-    
     conn.close()
     
-    return render_template('parent/shop.html', items=items, purchase_records=purchase_records, categories=dict(categories))
+    return render_template('parent/shop.html', items=items, categories=dict(categories))
 
 @bp.route('/statistics')
 def statistics():
@@ -133,22 +138,34 @@ def statistics():
 
 @bp.route('/pets')
 def pets():
-    """宠物管理页面"""
+    """宠物商城页面"""
     if 'user_id' not in session or session.get('role') != 'parent':
         return redirect(url_for('parent_routes.login'))
     
     conn = get_db_connection()
     
-    pets = conn.execute('''
-        SELECT p.*, c.nickname as child_name
-        FROM pets p
-        JOIN children c ON p.child_id = c.id
-        ORDER BY p.created_at DESC
+    # 获取宠物商城列表
+    pet_store_items = conn.execute('''
+        SELECT * FROM pet_store 
+        ORDER BY adoption_fee DESC
     ''').fetchall()
+    
+    # 获取宠物物种字典
+    pet_species_raw = conn.execute('''
+        SELECT dict_key, dict_value 
+        FROM dictionaries 
+        WHERE dict_type = 'pet_species'
+        ORDER BY sort_order
+    ''').fetchall()
+    
+    # 构建字典：{key: value}
+    pet_species = {}
+    for row in pet_species_raw:
+        pet_species[row['dict_key']] = row['dict_value']
     
     conn.close()
     
-    return render_template('parent/pets.html', pets=pets)
+    return render_template('parent/pets.html', pet_store_items=pet_store_items, pet_species=dict(pet_species))
 
 @bp.route('/wishlists')
 def wishlists():

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>丝滑 Q 弹正向反馈</title>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --primary-gradient: linear-gradient(135deg, #3dd2f3, #48c69d);
+            /* 更加丝滑的 Q 弹曲线 */
+            --elastic-curve: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f7f7f7;
+            font-family: -apple-system, sans-serif;
+        }
+
+        /* 遮罩层 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- 核心：12条旋转太阳光芒 --- */
+        .sunburst-container {
+            position: absolute;
+            width: 120vh;
+            height: 120vh;
+            pointer-events: none;
+            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.6s var(--elastic-curve);
+        }
+
+        .modal-overlay.show .sunburst-container {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .rays {
+            width: 100%;
+            height: 100%;
+            /* 12条光芒：30deg一条，15deg实色，15deg透明 */
+            background: repeating-conic-gradient(
+                    from 0deg,
+                    rgba(255, 215, 0, 0) 0deg 15deg,
+                    rgba(255, 215, 0, 0.25) 15deg 30deg
+            );
+            border-radius: 50%;
+            mask-image: radial-gradient(circle, black 10%, transparent 65%);
+            animation: rotateRays 15s linear infinite;
+            will-change: transform;
+        }
+
+        @keyframes rotateRays {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Q弹窗口 --- */
+        .pop-card {
+            width: 340px;
+            background: white;
+            border-radius: 50px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+            transform: scale(0) rotate(-5deg);
+            transition: transform 0.6s var(--elastic-curve);
+            will-change: transform;
+        }
+
+        .modal-overlay.show .pop-card {
+            transform: scale(1) rotate(0deg);
+        }
+
+        /* 奖杯动态 */
+        .trophy-wrap {
+            font-size: 85px;
+            margin-bottom: 25px;
+            display: inline-block;
+            filter: drop-shadow(0 15px 15px rgba(255, 152, 0, 0.3));
+            animation: trophyBounce 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes trophyBounce {
+            from { transform: translateY(0) scale(1) rotate(-3deg); }
+            to { transform: translateY(-15px) scale(1.05) rotate(3deg); }
+        }
+
+        h2 { font-size: 32px; color: #333; margin: 0; font-weight: 800; }
+        p { color: #888; font-size: 16px; margin: 10px 0 25px; }
+
+        /* 奖励显示 */
+        .reward-pill {
+            background: #FFFDE7;
+            border: 3px solid #FFF59D;
+            border-radius: 30px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .reward-val {
+            font-size: 28px;
+            font-weight: 900;
+            color: #F9A825;
+            letter-spacing: -1px;
+        }
+
+        /* 3D 硅胶质感按钮 */
+        .btn-confirm {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 22px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #28a9c4, 0 20px 30px rgba(61, 210, 243, 0.4);
+            transition: all 0.1s;
+        }
+
+        .btn-confirm:active {
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #28a9c4, 0 10px 15px rgba(61, 210, 243, 0.4);
+        }
+
+        /* 装饰小星 */
+        .star-particle {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none;
+            animation: starFloat 2.5s ease-in-out infinite;
+        }
+
+        @keyframes starFloat {
+            0%, 100% { transform: translate(0,0) scale(1); opacity: 0.8; }
+            50% { transform: translate(15px, -30px) scale(1.2); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<button onclick="toggleModal(true)" style="padding: 20px 40px; border-radius: 15px; cursor: pointer; border: none; background: #3dd2f3; color: white; font-weight: bold;">
+    点我领奖！
+</button>
+
+<div class="modal-overlay" id="finishModal">
+    <div class="sunburst-container">
+        <div class="rays"></div>
+    </div>
+
+    <div class="pop-card">
+        <span class="star-particle" style="top: -10px; left: 10px;">⭐</span>
+        <span class="star-particle" style="top: 40px; right: -20px; animation-delay: 0.4s;">✨</span>
+        <span class="star-particle" style="bottom: 80px; left: -30px; animation-delay: 0.8s;">🌟</span>
+
+        <div class="trophy-wrap">🏆</div>
+        <h2>超级厉害！</h2>
+        <p>任务完美达成，你是最棒的！</p>
+
+        <div class="reward-pill">
+            <span style="font-size: 36px;">💰</span>
+            <span class="reward-val">+100 能量豆</span>
+        </div>
+
+        <button class="btn-confirm" onclick="toggleModal(false)">开心领奖</button>
+    </div>
+</div>
+
+<script>
+    function toggleModal(show) {
+        const modal = document.getElementById('finishModal');
+        if(show) {
+            modal.classList.add('show');
+        } else {
+            modal.classList.remove('show');
+        }
+    }
+</script>
+</body>
+</html>

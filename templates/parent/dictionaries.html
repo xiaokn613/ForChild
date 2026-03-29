@@ -4,13 +4,6 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="row mb-3">
-        <div class="col-12">
-            <h2><i class="fas fa-book me-2"></i>字典管理</h2>
-            <p class="text-muted">管理系统中的各类字典配置项</p>
-        </div>
-    </div>
-
     <!-- 工具栏 -->
     <div class="toolbar mb-4">
         <div class="btn-group">
@@ -33,7 +26,6 @@
                             <th>ID</th>
                             <th>字典类型</th>
                             <th>字典值</th>
-                            <th>字典键</th>
                             <th>排序</th>
                             <th>状态</th>
                             <th>备注</th>
@@ -56,7 +48,6 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">新增字典项</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="dictionaryForm">
@@ -67,7 +58,7 @@
                             <option value="shop_category">商品类别</option>
                             <option value="pet_species">宠物物种</option>
                         </select>
-                        <small class="form-text text-muted">字典类型为系统预设，不可编辑</small>
+                        <small class="form-text text-muted" id="dictTypeHelp">💡 请选择字典类型</small>
                     </div>
                     <div class="mb-3">
                         <label for="dictValue" class="form-label">字典值 <span style="color: red;">*</span></label>
@@ -88,7 +79,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDictionaryModal()">取消</button>
                 <button type="button" class="btn btn-primary" onclick="saveDictionary()">保存</button>
             </div>
         </div>
@@ -96,6 +87,9 @@
 </div>
 
 <script>
+// 全局模态框实例
+let dictionaryModal = null;
+
 // 页面加载时获取字典列表
 document.addEventListener('DOMContentLoaded', function() {
     loadDictionaries();
@@ -133,7 +127,6 @@ function renderDictionaryList(items) {
                 <td>${item.id}</td>
                 <td><code>${escapeHtml(item.dict_type)}</code></td>
                 <td>${escapeHtml(item.dict_value)}</td>
-                <td><code>${escapeHtml(item.dict_key)}</code></td>
                 <td>${item.sort_order}</td>
                 <td>
                     <span class="badge bg-${item.is_active ? 'success' : 'secondary'}">
@@ -161,16 +154,22 @@ function showAddModal() {
     document.getElementById('itemId').value = '';
     document.getElementById('dictionaryForm').reset();
     document.getElementById('dictType').value = 'shop_category';
-    document.getElementById('dictType').disabled = false;
+    document.getElementById('dictTypeHelp').textContent = '💡 请选择字典类型';
     
-    new bootstrap.Modal(document.getElementById('dictionaryModal')).show();
+    if (!dictionaryModal) {
+        dictionaryModal = new bootstrap.Modal(document.getElementById('dictionaryModal'));
+    }
+    dictionaryModal.show();
 }
 
 // 编辑字典项
 async function editDictionary(id) {
+    console.log('编辑字典项 ID:', id);
     try {
         const response = await fetch(`/api/dictionaries/${id}`);
+        console.log('响应状态:', response.status);
         const result = await response.json();
+        console.log('响应结果:', result);
         
         if (result.success) {
             const item = result.data;
@@ -183,16 +182,25 @@ async function editDictionary(id) {
             document.getElementById('remark').value = item.remark || '';
             document.getElementById('isActive').checked = item.is_active;
             
-            // 编辑时不允许修改字典类型
-            document.getElementById('dictType').disabled = true;
+            document.getElementById('dictTypeHelp').textContent = '💡 可以修改字典类型，保存后将生成新的随机键';
             
-            new bootstrap.Modal(document.getElementById('dictionaryModal')).show();
+            if (!dictionaryModal) {
+                dictionaryModal = new bootstrap.Modal(document.getElementById('dictionaryModal'));
+            }
+            dictionaryModal.show();
         } else {
             layer.msg('获取详情失败：' + result.message);
         }
     } catch (error) {
         console.error('获取详情失败:', error);
-        layer.msg('获取详情失败');
+        layer.msg('获取详情失败：' + error.message);
+    }
+}
+
+// 关闭模态框
+function closeDictionaryModal() {
+    if (dictionaryModal) {
+        dictionaryModal.hide();
     }
 }
 
@@ -233,7 +241,9 @@ async function saveDictionary() {
         
         if (result.success) {
             layer.msg(id ? '更新成功' : '添加成功');
-            bootstrap.Modal.getInstance(document.getElementById('dictionaryModal')).hide();
+            if (dictionaryModal) {
+                dictionaryModal.hide();
+            }
             loadDictionaries();
         } else {
             layer.msg('操作失败：' + result.message);

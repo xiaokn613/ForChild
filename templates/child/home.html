@@ -46,13 +46,18 @@
         .avatar-circle { 
             width: 45px; 
             height: 45px; 
-            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 20px;
+            overflow: hidden;
+        }
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .stars-display {
@@ -69,6 +74,12 @@
             grid-template-columns: 1fr 320px;
             gap: 25px;
             padding: 0 35px 35px;
+            flex: 1;
+        }
+
+        .content-left {
+            display: flex;
+            flex-direction: column;
         }
 
         .welcome-banner {
@@ -101,6 +112,7 @@
             border-radius: 30px;
             padding: 25px;
             box-shadow: var(--card-shadow);
+            flex: 1;
         }
 
         .section-header {
@@ -113,7 +125,7 @@
         .task-item {
             display: flex;
             align-items: center;
-            padding: 15px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #f5f5f5;
             cursor: pointer;
             transition: all 0.3s;
@@ -121,16 +133,16 @@
         
         .task-item:hover {
             background: #f9f9f9;
-            border-radius: 10px;
-            padding-left: 10px;
+            border-radius: 8px;
+            padding-left: 8px;
         }
 
         .check-box {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             border: 2px solid #ddd;
-            border-radius: 6px;
-            margin-right: 15px;
+            border-radius: 5px;
+            margin-right: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -140,6 +152,7 @@
         .task-item.completed .check-box {
             background: #48c69d;
             border-color: #48c69d;
+            opacity: 0.3;
         }
 
         .task-item.completed .check-box::after {
@@ -147,10 +160,19 @@
             color: white;
             font-weight: bold;
         }
+        
+        .task-item.completed {
+            opacity: 1;
+        }
+        
+        .task-item.completed .task-info,
+        .task-item.completed .task-reward {
+            opacity: 0.3;
+        }
 
-        .task-info h4 { font-size: 15px; margin-bottom: 2px; }
-        .task-info p { font-size: 12px; color: var(--text-sub); }
-        .task-reward { margin-left: auto; color: var(--gold); font-size: 13px; font-weight: bold; }
+        .task-info h4 { font-size: 14px; margin-bottom: 2px; }
+        .task-info p { font-size: 11px; color: var(--text-sub); }
+        .task-reward { margin-left: auto; color: var(--gold); font-size: 12px; font-weight: bold; }
 
         .wish-item {
             margin-bottom: 20px;
@@ -216,6 +238,286 @@
             .main-layout { grid-template-columns: 1fr; }
         }
 
+        /* ========== Feedback 弹窗样式（完全按照 UI-design/feedback2.html）========== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease;
+        }
+        
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sunburst-container {
+            position: absolute;
+            width: 120vh;
+            height: 120vh;
+            pointer-events: none;
+            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+        }
+        
+        .modal-overlay.show .sunburst-container {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .rays {
+            width: 100%;
+            height: 100%;
+            background: repeating-conic-gradient(
+                    from 0deg,
+                    rgba(255, 215, 0, 0) 0deg 15deg,
+                    rgba(255, 215, 0, 0.25) 15deg 30deg
+            );
+            border-radius: 50%;
+            mask-image: radial-gradient(circle, black 10%, transparent 65%);
+            animation: rotateRays 15s linear infinite;
+            will-change: transform;
+        }
+        
+        @keyframes rotateRays {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .pop-card {
+            width: 340px;
+            background: white;
+            border-radius: 50px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+            transform: scale(0) rotate(-5deg);
+            transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+            will-change: transform;
+        }
+        
+        .modal-overlay.show .pop-card {
+            transform: scale(1) rotate(0deg);
+        }
+        
+        .trophy-wrap {
+            font-size: 85px;
+            margin-bottom: 25px;
+            display: inline-block;
+            filter: drop-shadow(0 15px 15px rgba(255, 152, 0, 0.3));
+            animation: trophyBounce 1s ease-in-out infinite alternate;
+        }
+        
+        @keyframes trophyBounce {
+            from { transform: translateY(0) scale(1) rotate(-3deg); }
+            to { transform: translateY(-15px) scale(1.05) rotate(3deg); }
+        }
+        
+        h2 { font-size: 32px; color: #333; margin: 0; font-weight: 800; }
+        p { color: #888; font-size: 16px; margin: 10px 0 25px; }
+        
+        .reward-pill {
+            background: #FFFDE7;
+            border: 3px solid #FFF59D;
+            border-radius: 30px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .reward-val {
+            font-size: 28px;
+            font-weight: 900;
+            color: #F9A825;
+            letter-spacing: -1px;
+        }
+        
+        .btn-confirm {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 22px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #28a9c4, 0 20px 30px rgba(61, 210, 243, 0.4);
+            transition: all 0.1s;
+        }
+        
+        .btn-confirm:active {
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #28a9c4, 0 10px 15px rgba(61, 210, 243, 0.4);
+        }
+        
+        .star-particle {
+            position: absolute;
+            font-size: 24px;
+            pointer-events: none;
+            animation: starFloat 2.5s ease-in-out infinite;
+        }
+        
+        @keyframes starFloat {
+            0%, 100% { transform: translate(0,0) scale(1); opacity: 0.8; }
+            50% { transform: translate(15px, -30px) scale(1.2); opacity: 1; }
+        }
+        
+        /* 烟花纸花粒子 */
+        .confetti-firework {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 10000;
+            border-radius: 2px;
+            animation: confettiExplode 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        
+        @keyframes confettiExplode {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0);
+                opacity: 0;
+            }
+        }
+        /* ========== End Feedback 弹窗样式 ========== */
+
+        /* Wait 提醒弹窗样式 */
+        .wait-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .wait-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .wait-card {
+            width: 90%;
+            max-width: 360px;
+            background: white;
+            border-radius: 40px;
+            padding: 40px 30px;
+            text-align: center;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+
+        .wait-overlay.show .wait-card {
+            transform: translateY(0);
+        }
+
+        .icon-wrapper {
+            width: 100px;
+            height: 100px;
+            background: #f3f0ff;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            position: relative;
+        }
+
+        .zzz {
+            position: absolute;
+            font-size: 20px;
+            color: #9575cd;
+            font-weight: bold;
+            animation: sleep-fade 2s infinite;
+        }
+
+        @keyframes sleep-fade {
+            0% { transform: translate(10px, 0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(30px, -30px); opacity: 0; }
+        }
+
+        .wait-title {
+            font-size: 22px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .wait-msg {
+            font-size: 15px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .time-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1e88e5;
+            padding: 6px 15px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .primary-btn {
+            background: #9575cd;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(149, 117, 205, 0.3);
+            width: 100%;
+        }
+
+        .primary-btn:active {
+            transform: scale(0.97);
+        }
+
+        .secondary-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 5px;
+            margin-top: 10px;
+        }
+
         .success-toast {
             position: fixed;
             top: 20px;
@@ -246,7 +548,13 @@
 <div class="home-container">
     <nav class="top-nav">
         <div class="user-info">
-            <div class="avatar-circle">👦</div>
+            <div class="avatar-circle" id="avatarCircle">
+                {% if child.avatar %}
+                <img src="{{ child.avatar }}" alt="头像">
+                {% else %}
+                👦
+                {% endif %}
+            </div>
             <div>
                 <div style="font-weight: bold;" id="childName">早上好，{{ child.nickname }}</div>
                 <div style="font-size: 12px; color: var(--text-sub);">今天也要和宠物开心度过哦</div>
@@ -323,6 +631,52 @@
             <span class="nav-label">愿望</span>
         </a>
     </div>
+
+    <!-- Feedback 弹窗（完全按照 UI-design/feedback2.html） -->
+    <div class="modal-overlay" id="congratsModal">
+        <div class="sunburst-container">
+            <div class="rays"></div>
+        </div>
+
+        <div class="pop-card">
+            <span class="star-particle" style="top: -10px; left: 10px;">⭐</span>
+            <span class="star-particle" style="top: 40px; right: -20px; animation-delay: 0.4s;">✨</span>
+            <span class="star-particle" style="bottom: 80px; left: -30px; animation-delay: 0.8s;">🌟</span>
+
+            <div class="trophy-wrap">🏆</div>
+            <h2>超级厉害！</h2>
+            <p>任务完美达成，你是最棒的！</p>
+
+            <div class="reward-pill" id="rewardBadge" style="display: none;">
+                <span style="font-size: 36px;">💰</span>
+                <span class="reward-val" id="rewardAmount">+10 星星</span>
+            </div>
+
+            <button class="btn-confirm" onclick="hideFeedbackModal()">开心收下</button>
+        </div>
+    </div>
+
+    <!-- Wait 提醒弹窗 -->
+    <div class="wait-overlay" id="waitModal">
+        <div class="wait-card">
+            <div class="icon-wrapper">
+                <span>😴</span>
+                <span class="zzz" style="animation-delay: 0s;">z</span>
+                <span class="zzz" style="animation-delay: 0.6s; left: 60px; top: 20px;">z</span>
+            </div>
+
+            <h3 class="wait-title">还没到时间哦~</h3>
+            <p class="wait-msg">
+                等一会我们再来完成任务吧！<br>
+                <span class="time-tag" id="waitTimeTag">🕒 下次开始时间：08:00</span>
+            </p>
+
+            <div class="action-btns">
+                <button class="primary-btn" onclick="hideWaitModal()">好哒，我也休息下</button>
+                <button class="secondary-btn" onclick="hideWaitModal()">去看看其他任务</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -349,19 +703,24 @@
             return;
         }
 
-        container.innerHTML = tasks.map(task => `
+        container.innerHTML = tasks.map(task => {
+            const timeRange = task.schedule_time_start && task.schedule_time_end 
+                ? `${task.schedule_time_start.substring(0,5)} ~ ${task.schedule_time_end.substring(0,5)}`
+                : (task.schedule_time ? task.schedule_time.substring(0,5) : '-');
+            
+            return `
             <div class="task-item ${task.status === 'completed' ? 'completed' : ''}" 
                  onclick="${task.status === 'pending' ? `completeTask(${task.id})` : ''}">
                 <div class="check-box"></div>
                 <div class="task-info">
                     <h4>${task.task_name}</h4>
-                    <p>${task.description || ''}</p>
+                    <p>${task.description || ''} · ⏰ ${timeRange}</p>
                 </div>
                 <div class="task-reward">
-                    ${task.status === 'completed' ? '已领取' : '+' + task.star_reward + ' 星星'}
+                    ${task.status === 'completed' ? '已领取' : '+' + task.star_reward + ' ⭐'}
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     // 完成任务
@@ -378,14 +737,26 @@
             const data = await response.json();
             
             if (data.success) {
-                // 显示成功提示
-                showToast('✅ ' + data.message);
+                // 显示 Feedback 弹窗
+                showFeedbackModal(data.message, data.data.stars_earned);
                 // 更新星星显示
                 document.getElementById('totalStars').textContent = '⭐ ' + data.data.new_total_stars + ' 星星';
                 // 重新加载任务
                 loadTasks();
             } else {
-                alert(data.message);
+                // 判断是否是时间不在范围内的错误
+                if (data.message && data.message.includes('打卡时间为')) {
+                    // 提取时间范围
+                    const timeMatch = data.message.match(/打卡时间为 (\d{2}:\d{2})~(\d{2}:\d{2})/);
+                    if (timeMatch) {
+                        const startTime = timeMatch[1];
+                        showWaitModal(startTime);
+                    } else {
+                        alert(data.message);
+                    }
+                } else {
+                    alert(data.message);
+                }
             }
         } catch (error) {
             alert('操作失败，请稍后重试');
@@ -434,17 +805,126 @@
         }).join('');
     }
 
-    // 显示成功提示
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'success-toast';
-        toast.textContent = message;
-        document.body.appendChild(toast);
+    // 显示 Feedback 弹窗
+    function showFeedbackModal(message, stars) {
+        const modal = document.getElementById('congratsModal');
+        const rewardBadge = document.getElementById('rewardBadge');
+        const rewardAmount = document.getElementById('rewardAmount');
         
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        // 设置消息内容（直接修改 p 标签文本）
+        const pTag = modal.querySelector('p');
+        pTag.textContent = message;
+        
+        // 显示奖励信息（如果有星星）
+        if (stars && stars > 0) {
+            rewardAmount.textContent = '+' + stars + ' 星星';
+            rewardBadge.style.display = 'flex';
+        } else {
+            rewardBadge.style.display = 'none';
+        }
+        
+        // 显示弹窗
+        modal.classList.add('show');
+        
+        // 触发烟花纸花效果
+        createConfettiFirework();
     }
+
+    // 隐藏 Feedback 弹窗
+    function hideFeedbackModal() {
+        const modal = document.getElementById('congratsModal');
+        modal.classList.remove('show');
+    }
+
+    // 创建烟花纸花效果
+    function createConfettiFirework() {
+        const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+        const shapes = ['🎉', '✨', '⭐', '🌟', '💫', '⭕', '◆', '●'];
+        
+        // 从屏幕中心向外绽放
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        
+        // 创建 60 个纸花粒子
+        for (let i = 0; i < 60; i++) {
+            createConfettiParticle(centerX, centerY, colors, shapes);
+        }
+    }
+
+    // 创建单个纸花粒子
+    function createConfettiParticle(x, y, colors, shapes) {
+        const particle = document.createElement('div');
+        particle.className = 'confetti-firework';
+        
+        // 随机颜色和形状（emoji）
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        
+        // 50% 概率使用 emoji，50% 概率使用彩色方块
+        if (Math.random() > 0.5) {
+            particle.textContent = shape;
+            particle.style.fontSize = Math.random() * 10 + 10 + 'px';
+            particle.style.background = 'transparent';
+        } else {
+            particle.style.background = color;
+            particle.style.width = Math.random() * 8 + 6 + 'px';
+            particle.style.height = Math.random() * 8 + 6 + 'px';
+        }
+        
+        // 设置初始位置
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        
+        // 计算爆炸方向（360 度随机角度）
+        const angle = Math.random() * Math.PI * 2;
+        const velocity = Math.random() * 200 + 150; // 爆炸半径 150-350px
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity - 100; // 稍微向上偏移
+        
+        // 设置 CSS 变量
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+        
+        // 添加到页面
+        document.body.appendChild(particle);
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+            particle.remove();
+        }, 1500);
+    }
+
+    // 点击背景关闭弹窗
+    document.getElementById('congratsModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('congratsModal')) {
+            hideFeedbackModal();
+        }
+    });
+
+    // 显示 Wait 提醒弹窗
+    function showWaitModal(startTime) {
+        const modal = document.getElementById('waitModal');
+        const waitTimeTag = document.getElementById('waitTimeTag');
+        
+        // 设置时间提示
+        waitTimeTag.textContent = '🕒 下次开始时间：' + startTime;
+        
+        // 显示弹窗
+        modal.classList.add('show');
+    }
+
+    // 隐藏 Wait 提醒弹窗
+    function hideWaitModal() {
+        const modal = document.getElementById('waitModal');
+        modal.classList.remove('show');
+    }
+
+    // 点击背景关闭 Wait 弹窗
+    document.getElementById('waitModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('waitModal')) {
+            hideWaitModal();
+        }
+    });
 
     // 页面加载时初始化
     window.onload = function() {

@@ -8,8 +8,14 @@
 import sqlite3
 from datetime import datetime, timedelta
 import os
+import random
+import string
 
 DATABASE = 'forchild.db'
+
+def get_local_timestamp():
+    """获取本地时间戳"""
+    return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def get_db_connection():
     """获取数据库连接"""
@@ -116,6 +122,8 @@ def init_db():
                 status TEXT CHECK(status IN ('pending', 'completed', 'expired')) DEFAULT 'pending',
                 completed_at TIMESTAMP,
                 stars_earned INTEGER DEFAULT 0,
+                badges_earned INTEGER DEFAULT 0,
+                trophies_earned INTEGER DEFAULT 0,
                 note TEXT,
                 FOREIGN KEY (template_id) REFERENCES task_templates(id) ON DELETE CASCADE,
                 FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE,
@@ -239,7 +247,21 @@ def init_db():
             )
         ''')
         
-        # 14. 宠物互动记录表
+        # 15. 宠物商城表（可购买的宠物品种）
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS pet_store (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                breed_name TEXT NOT NULL,
+                species TEXT,  -- 宠物物种（如：dog, cat, pig 等）
+                description TEXT,
+                adoption_fee INTEGER NOT NULL DEFAULT 0,
+                image TEXT,
+                is_active BOOLEAN DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # 16. 宠物互动记录表
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS pet_interactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -371,16 +393,31 @@ def init_db():
                 ('宠物大师', '将宠物培养到满级', '👑', '宠物满级', 500)
             ''')
             
-            # 插入默认字典数据 - 商品类别
+            # 插入默认字典数据 - 商品类别（使用随机键）
+            def generate_random_key(length=8):
+                letters_and_digits = string.ascii_letters + string.digits
+                return ''.join(random.choice(letters_and_digits) for _ in range(length))
+            
             cursor.execute('''
                 INSERT INTO dictionaries (dict_type, dict_value, dict_key, sort_order, remark)
                 VALUES 
-                ('shop_category', '食品', 'shop_category_1', 1, '商品类型 - 食品'),
-                ('shop_category', '清洁', 'shop_category_2', 2, '商品类型 - 清洁'),
-                ('shop_category', '心情', 'shop_category_3', 3, '商品类型 - 心情'),
-                ('shop_category', '装饰', 'shop_category_4', 4, '商品类型 - 装饰'),
-                ('shop_category', '实物', 'shop_category_5', 5, '商品类型 - 实物')
-            ''')
+                ('shop_category', '食品', ?, 1, '商品类型 - 食品'),
+                ('shop_category', '清洁', ?, 2, '商品类型 - 清洁'),
+                ('shop_category', '心情', ?, 3, '商品类型 - 心情'),
+                ('shop_category', '装饰', ?, 4, '商品类型 - 装饰'),
+                ('shop_category', '实物', ?, 5, '商品类型 - 实物')
+            ''', (generate_random_key(), generate_random_key(), generate_random_key(), generate_random_key(), generate_random_key()))
+                        
+            # 插入默认字典数据 - 宠物物种（使用随机键）
+            cursor.execute('''
+                INSERT INTO dictionaries (dict_type, dict_value, dict_key, sort_order, remark)
+                VALUES 
+                ('pet_species', '狗', ?, 1, '宠物物种 - 狗'),
+                ('pet_species', '猫', ?, 2, '宠物物种 - 猫'),
+                ('pet_species', '猪', ?, 3, '宠物物种 - 猪'),
+                ('pet_species', '兔', ?, 4, '宠物物种 - 兔'),
+                ('pet_species', '鸟', ?, 5, '宠物物种 - 鸟')
+            ''', (generate_random_key(), generate_random_key(), generate_random_key(), generate_random_key(), generate_random_key()))
         
         conn.commit()
         print("✅ 数据库初始化成功！")

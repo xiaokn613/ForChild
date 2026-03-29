@@ -62,7 +62,6 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>头像</th>
                     <th>姓名</th>
                     <th>昵称</th>
                     <th>出生日期</th>
@@ -75,20 +74,12 @@
             <tbody>
                 {% for child in children %}
                 <tr>
-                    <td>
-                        {% if child.avatar %}
-                        <img src="{{ child.avatar }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="头像">
-                        {% else %}
-                        <img src="https://ui-avatars.com/api/?name={{ child.nickname }}&background=random" 
-                             style="width: 40px; height: 40px; border-radius: 50%;" alt="头像">
-                        {% endif %}
-                    </td>
                     <td><strong>{{ child.name or '-' }}</strong></td>
                     <td>{{ child.nickname }}</td>
                     <td>{{ child.birthday or '-' }}</td>
-                    <td>{{ child.total_stars }}</td>
-                    <td>{{ child.total_badges }}</td>
-                    <td>{{ child.total_trophies }}</td>
+                    <td><span class="badge badge-warning"><i class="fas fa-star"></i> {{ child.total_stars }}</span></td>
+                    <td><span class="badge badge-info"><i class="fas fa-medal"></i> {{ child.total_badges }}</span></td>
+                    <td><span class="badge badge-danger"><i class="fas fa-trophy"></i> {{ child.total_trophies }}</span></td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="editChild({{ child.id }})">
                             <i class="fas fa-edit"></i> 详情
@@ -98,6 +89,87 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- 宠物领养关系 -->
+<div class="card mt-4">
+    <div class="card-header">
+        <span><i class="fas fa-paw"></i> 已领养宠物</span>
+    </div>
+    <div class="card-body">
+        {% if adoptions %}
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>所属孩子</th>
+                    <th>宠物名称</th>
+                    <th>品种</th>
+                    <th>物种类型</th>
+                    <th>饱腹度</th>
+                    <th>清洁度</th>
+                    <th>心情</th>
+                    <th>状态</th>
+                    <th>领养时间</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adoption in adoptions %}
+                <tr>
+                    <td>{{ adoption.child_name }}</td>
+                    <td><strong>{{ adoption.name }}</strong></td>
+                    <td>{{ adoption.breed_name or '-' }}</td>
+                    <td>{{ adoption.species_name or adoption.species or '-' }}</td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ (adoption.hunger / 100 * 100)|int }}%;"
+                                 aria-valuenow="{{ adoption.hunger }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ adoption.hunger }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-info" role="progressbar" 
+                                 style="width: {{ (adoption.cleanliness / 100 * 100)|int }}%;"
+                                 aria-valuenow="{{ adoption.cleanliness }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ adoption.cleanliness }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                 style="width: {{ (adoption.mood / 100 * 100)|int }}%;"
+                                 aria-valuenow="{{ adoption.mood }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ adoption.mood }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if adoption.status == 'normal' %}
+                        <span class="badge badge-success">健康</span>
+                        {% elif adoption.status == 'sick' %}
+                        <span class="badge badge-danger">生病</span>
+                        {% elif adoption.status == 'sleeping' %}
+                        <span class="badge badge-secondary">睡觉</span>
+                        {% else %}
+                        <span class="badge badge-secondary">{{ adoption.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ adoption.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center text-muted" style="padding: 40px;">
+            <i class="fas fa-paw" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <p>暂无宠物领养记录</p>
+            <small>让孩子通过任务赚取星星，然后领养他们的第一只宠物吧！</small>
+        </div>
+        {% endif %}
     </div>
 </div>
 

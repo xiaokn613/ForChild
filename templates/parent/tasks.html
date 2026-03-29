@@ -3,14 +3,6 @@
 {% block title %}任务管理 - 家长端{% endblock %}
 
 {% block content %}
-<!-- 面包屑导航 -->
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/parent/dashboard">首页</a></li>
-        <li class="breadcrumb-item active" aria-current="page">任务管理</li>
-    </ol>
-</nav>
-
 <!-- 工具栏 -->
 <div class="toolbar">
     <div class="btn-group" role="group">
@@ -31,6 +23,9 @@
         </button>
         <button type="button" class="btn btn-success ml-2" onclick="exportTasks()">
             <i class="fas fa-download"></i> 导出
+        </button>
+        <button type="button" class="btn btn-danger ml-2" onclick="clearDailyTasks()">
+            <i class="fas fa-trash-alt"></i> 清空所有当日任务
         </button>
     </div>
 </div>
@@ -1254,6 +1249,53 @@ function exportTasks() {
         document.body.removeChild(link);
         
         layer.msg('导出成功！', {icon: 1, time: 1500});
+        layer.close(index);
+    });
+}
+
+// 清空所有小孩当日任务状态（仅用于数据测试）
+function clearDailyTasks() {
+    layer.confirm('⚠️ 警告：此操作将清空所有小孩今日已完成的任务状态，但不会退回已获得的星星、徽章和奖杯！\n\n确定要继续吗？', {
+        icon: 7,
+        title: '<i class="fas fa-exclamation-triangle"></i> 危险操作确认',
+        btn: ['确定清空', '取消'],
+        btnAlign: 'c',
+        shadeClose: true
+    }, function(index) {
+        // 显示加载提示
+        var loadingIndex = layer.load(2, {shade: 0.3});
+        
+        fetch('/api/tasks/clear-daily', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            layer.close(loadingIndex);
+            
+            if (data.success) {
+                layer.msg('清空成功！今日任务已重置为未完成状态', {
+                    icon: 1,
+                    time: 2000,
+                    shade: 0.3
+                });
+                // 重新加载任务列表
+                loadTaskTemplates();
+            } else {
+                layer.msg('清空失败：' + data.message, {
+                    icon: 2,
+                    time: 2000
+                });
+            }
+        })
+        .catch(error => {
+            layer.close(loadingIndex);
+            console.error('Error:', error);
+            layer.msg('网络错误，请稍后重试', {
+                icon: 2,
+                time: 2000
+            });
+        });
+        
         layer.close(index);
     });
 }

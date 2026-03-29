@@ -5,11 +5,13 @@ API 接口路由
 提供前后端数据交互
 """
 
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, redirect, url_for
 from models import get_db_connection
 from datetime import datetime, timedelta
 import json
 import os
+import random
+import string
 from werkzeug.utils import secure_filename
 
 bp = Blueprint('api_routes', __name__)
@@ -22,18 +24,20 @@ def login():
     data = request.json
     username = data.get('username')
     password = data.get('password')
-    role = data.get('role')  # 'child' or 'parent'
     
     conn = get_db_connection()
     user = conn.execute('''
         SELECT * FROM users 
-        WHERE username = ? AND password = ? AND role = ? AND is_active = 1
-    ''', (username, password, role)).fetchone()
+        WHERE username = ? AND password = ? AND is_active = 1
+    ''', (username, password)).fetchone()
     
     if user:
         session['user_id'] = user['id']
         session['username'] = user['username']
         session['role'] = user['role']
+        
+        # 根据角色返回不同的跳转地址
+        redirect_url = url_for('child_routes.home') if user['role'] == 'child' else url_for('parent_routes.dashboard')
         
         return jsonify({
             'success': True,
@@ -41,7 +45,8 @@ def login():
             'data': {
                 'user_id': user['id'],
                 'username': user['username'],
-                'role': user['role']
+                'role': user['role'],
+                'redirect_url': redirect_url
             }
         })
     else:
@@ -52,11 +57,14 @@ def login():
     
     conn.close()
 
-@bp.route('/logout', methods=['POST'])
+@bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     """用户登出"""
     session.clear()
-    return jsonify({'success': True, 'message': '已退出登录'})
+    if request.method == 'POST':
+        return jsonify({'success': True, 'message': '已退出登录'})
+    else:
+        return redirect(url_for('index'))
 
 @bp.route('/check-auth', methods=['GET'])
 def check_auth():
@@ -685,7 +693,7 @@ def get_today_tasks():
     # 获取或创建今日任务
     templates = conn.execute('''
         SELECT * FROM task_templates 
-        WHERE child_id = ? AND is_active = 1
+        WHERE child_id = ? AND is_active = 1 AND is_deleted = 0
     ''', (child['id'],)).fetchall()
     
     tasks = []
@@ -714,7 +722,11 @@ def get_today_tasks():
             'task_name': template['name'],
             'description': template['description'],
             'star_reward': template['star_reward'],
-            'task_type': template['task_type']
+            'badge_reward': template['badge_reward'],
+            'trophy_reward': template['trophy_reward'],
+            'task_type': template['task_type'],
+            'schedule_time_start': template['schedule_time_start'],
+            'schedule_time_end': template['schedule_time_end']
         })
     
     conn.close()
@@ -741,42 +753,91 @@ def complete_task():
         conn.close()
         return jsonify({'success': False, 'message': '未找到儿童信息'}), 404
     
-    # 更新任务状态
-    task = conn.execute('''
-        SELECT dt.*, tt.star_reward 
+    # 获取任务及其模板信息
+    task_row = conn.execute('''
+        SELECT dt.*, 
+               tt.star_reward, tt.badge_reward, tt.trophy_reward,
+               tt.schedule_time_start, tt.schedule_time_end
         FROM daily_tasks dt
         JOIN task_templates tt ON dt.template_id = tt.id
         WHERE dt.id = ? AND dt.child_id = ?
     ''', (task_id, child['id'])).fetchone()
     
-    if not task:
+    if not task_row:
         conn.close()
         return jsonify({'success': False, 'message': '任务不存在'}), 404
+    
+    # 转换为字典
+    task = dict(task_row)
     
     if task['status'] == 'completed':
         conn.close()
         return jsonify({'success': False, 'message': '任务已完成'}), 400
     
+    # 检查是否在规定的时间范围内
+    now = datetime.now()
+    current_time = now.strftime('%H:%M')
+    
+    schedule_start = task.get('schedule_time_start')
+    schedule_end = task.get('schedule_time_end')
+    
+    if schedule_start and schedule_end:
+        # 处理 datetime 对象或字符串
+        if hasattr(schedule_start, 'strftime'):
+            start_time = schedule_start.strftime('%H:%M')
+        else:
+            start_time = str(schedule_start)[:5]  # 截取 HH:MM
+            
+        if hasattr(schedule_end, 'strftime'):
+            end_time = schedule_end.strftime('%H:%M')
+        else:
+            end_time = str(schedule_end)[:5]  # 截取 HH:MM
+        
+        if current_time < start_time or current_time > end_time:
+            conn.close()
+            return jsonify({
+                'success': False,
+                'message': f'该任务的打卡时间为 {start_time}~{end_time}，当前不在规定时间内'
+            }), 400
+    
     # 更新任务状态
     now = datetime.now()
     conn.execute('''
         UPDATE daily_tasks 
-        SET status = 'completed', completed_at = ?, stars_earned = ?
+        SET status = 'completed', completed_at = ?, 
+            stars_earned = ?, badges_earned = ?, trophies_earned = ?
         WHERE id = ?
-    ''', (now, task['star_reward'], task_id))
+    ''', (now, task['star_reward'], task['badge_reward'], task['trophy_reward'], task_id))
     
     # 增加星星积分
-    conn.execute('''
-        UPDATE children 
-        SET total_stars = total_stars + ?
-        WHERE id = ?
-    ''', (task['star_reward'], child['id']))
+    if task['star_reward'] > 0:
+        conn.execute('''
+            UPDATE children 
+            SET total_stars = total_stars + ?
+            WHERE id = ?
+        ''', (task['star_reward'], child['id']))
+        
+        # 记录星星获取
+        conn.execute('''
+            INSERT INTO star_records (child_id, amount, type, source, description)
+            VALUES (?, ?, 'earn', 'task', ?)
+        ''', (child['id'], task['star_reward'], f"完成任务：{task['template_id']}"))
     
-    # 记录星星获取
-    conn.execute('''
-        INSERT INTO star_records (child_id, amount, type, source, description)
-        VALUES (?, ?, 'earn', 'task', ?)
-    ''', (child['id'], task['star_reward'], f"完成任务：{task['task_name']}"))
+    # 增加徽章（如果有）
+    if task['badge_reward'] > 0:
+        conn.execute('''
+            UPDATE children 
+            SET total_badges = total_badges + ?
+            WHERE id = ?
+        ''', (task['badge_reward'], child['id']))
+    
+    # 增加奖杯（如果有）
+    if task['trophy_reward'] > 0:
+        conn.execute('''
+            UPDATE children 
+            SET total_trophies = total_trophies + ?
+            WHERE id = ?
+        ''', (task['trophy_reward'], child['id']))
     
     # 更新统计
     today_str = now.strftime('%Y-%m-%d')
@@ -800,14 +861,74 @@ def complete_task():
     conn.commit()
     conn.close()
     
+    # 构建奖励消息
+    reward_msg = f'任务完成！获得{task["star_reward"]}颗星星'
+    if task['badge_reward'] > 0:
+        reward_msg += f'、{task["badge_reward"]}个徽章'
+    if task['trophy_reward'] > 0:
+        reward_msg += f'、{task["trophy_reward"]}个奖杯'
+    
     return jsonify({
         'success': True,
-        'message': '任务完成！获得{}颗星星'.format(task['star_reward']),
+        'message': reward_msg,
         'data': {
             'stars_earned': task['star_reward'],
-            'new_total_stars': child['total_stars'] + task['star_reward']
+            'badges_earned': task['badge_reward'],
+            'trophies_earned': task['trophy_reward'],
+            'new_total_stars': child['total_stars'] + task['star_reward'],
+            'new_total_badges': child['total_badges'] + task['badge_reward'],
+            'new_total_trophies': child['total_trophies'] + task['trophy_reward']
         }
     })
+
+@bp.route('/tasks/clear-daily', methods=['POST'])
+def clear_daily_tasks():
+    """清空所有小孩当日任务状态（仅用于数据测试）"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': '未登录'}), 401
+    
+    parent_id = session['user_id']
+    conn = get_db_connection()
+    
+    try:
+        # 获取当前家长的所有孩子
+        children = conn.execute('''
+            SELECT id FROM children WHERE parent_id = ?
+        ''', (parent_id,)).fetchall()
+        
+        if not children:
+            return jsonify({
+                'success': False,
+                'message': '您还没有创建孩子账号'
+            }), 404
+        
+        child_ids = [child['id'] for child in children]
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # 清空今日所有已完成的任务状态
+        for child_id in child_ids:
+            conn.execute('''
+                UPDATE daily_tasks 
+                SET status = 'pending', completed_at = NULL,
+                    stars_earned = 0, badges_earned = 0, trophies_earned = 0
+                WHERE child_id = ? AND task_date = ? AND status = 'completed'
+            ''', (child_id, today))
+        
+        conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'成功清空 {len(children)} 个孩子的今日任务状态'
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'清空失败：{str(e)}'
+        }), 500
+    finally:
+        conn.close()
 
 # ==================== 宠物互动 ====================
 
@@ -1456,16 +1577,20 @@ def add_dictionary_item():
     
     conn = get_db_connection()
     try:
-        # 获取该类型下最大的 ID 后缀
-        # 使用更精确的匹配：只匹配 dict_type 相同的记录
-        max_result = conn.execute('''
-            SELECT MAX(CAST(SUBSTR(dict_key, LENGTH(?) + 2) AS INTEGER)) as max_id
-            FROM dictionaries 
-            WHERE dict_type = ? AND dict_key LIKE ? || '_%'
-        ''', (dict_type, dict_type, dict_type)).fetchone()
+        # 生成随机字典键（8 位随机字母 + 数字）
+        def generate_random_key(length=8):
+            letters_and_digits = string.ascii_letters + string.digits
+            return ''.join(random.choice(letters_and_digits) for _ in range(length))
         
-        max_id = max_result['max_id'] or 0
-        new_dict_key = f"{dict_type}_{max_id + 1}"
+        # 确保生成的键唯一
+        new_dict_key = generate_random_key()
+        while True:
+            existing_key = conn.execute('''
+                SELECT id FROM dictionaries WHERE dict_key = ?
+            ''', (new_dict_key,)).fetchone()
+            if not existing_key:
+                break
+            new_dict_key = generate_random_key()
         
         # 检查是否已存在
         existing = conn.execute('''
@@ -1534,15 +1659,25 @@ def update_dictionary_item(item_id):
         if not old_item:
             return jsonify({'success': False, 'message': '字典项不存在'}), 404
         
-        # 不允许修改字典类型
+        # 如果字典类型有变化，需要生成新的随机键
+        new_dict_key = old_item['dict_key']
         if dict_type != old_item['dict_type']:
-            return jsonify({
-                'success': False,
-                'message': '不允许修改字典类型'
-            }), 400
+            # 生成新的随机键
+            def generate_random_key(length=8):
+                letters_and_digits = string.ascii_letters + string.digits
+                return ''.join(random.choice(letters_and_digits) for _ in range(length))
+            
+            new_dict_key = generate_random_key()
+            while True:
+                existing_key = conn.execute('''
+                    SELECT id FROM dictionaries WHERE dict_key = ? AND id != ?
+                ''', (new_dict_key, item_id)).fetchone()
+                if not existing_key:
+                    break
+                new_dict_key = generate_random_key()
         
-        # 如果值有变化，检查新值是否已被使用
-        if dict_value != old_item['dict_value']:
+        # 如果值有变化，检查新值是否已被使用（在同一字典类型下）
+        if dict_value != old_item['dict_value'] or dict_type != old_item['dict_type']:
             existing = conn.execute('''
                 SELECT id FROM dictionaries 
                 WHERE dict_type = ? AND dict_value = ? AND id != ?
@@ -1551,16 +1686,16 @@ def update_dictionary_item(item_id):
             if existing:
                 return jsonify({
                     'success': False,
-                    'message': '该字典值已存在'
+                    'message': '该字典类型下的字典值已存在'
                 }), 400
         
-        # 更新字典项（dict_key 保持不变）
+        # 更新字典项（如果类型变化，dict_key 也会更新）
         conn.execute('''
             UPDATE dictionaries 
-            SET dict_value = ?, sort_order = ?, 
+            SET dict_type = ?, dict_value = ?, dict_key = ?, sort_order = ?, 
                 is_active = ?, remark = ?
             WHERE id = ?
-        ''', (dict_value, sort_order, 1 if is_active else 0, remark, item_id))
+        ''', (dict_type, dict_value, new_dict_key, sort_order, 1 if is_active else 0, remark, item_id))
         
         conn.commit()
         

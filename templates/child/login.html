@@ -162,20 +162,9 @@
 <div class="login-card">
     <div class="logo-area">🏠</div>
     <h2>欢迎来到宠物家园</h2>
-    <p class="subtitle">请选择你的身份登录</p>
+    <p class="subtitle">登录您的账号</p>
 
     <div id="errorMessage" class="error-message"></div>
-
-    <div class="role-selector">
-        <div class="role-option selected" onclick="selectRole('child')">
-            <div class="icon">👦</div>
-            <div class="label">我是小朋友</div>
-        </div>
-        <div class="role-option" onclick="selectRole('parent')">
-            <div class="icon">👨‍👩‍👧</div>
-            <div class="label">我是家长</div>
-        </div>
-    </div>
 
     <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
@@ -188,23 +177,9 @@
         </div>
         <button type="submit" class="login-submit">立即登录</button>
     </form>
-
-    <div class="parent-link">
-        管理孩子账号？<a href="/parent/login">进入家长端</a>
-    </div>
 </div>
 
 <script>
-    let selectedRole = 'child';
-
-    function selectRole(role) {
-        selectedRole = role;
-        document.querySelectorAll('.role-option').forEach(item => {
-            item.classList.remove('selected');
-        });
-        event.currentTarget.classList.add('selected');
-    }
-
     async function handleLogin(event) {
         event.preventDefault();
         
@@ -220,20 +195,15 @@
                 },
                 body: JSON.stringify({
                     username: username,
-                    password: password,
-                    role: selectedRole
+                    password: password
                 })
             });
             
             const data = await response.json();
             
             if (data.success) {
-                // 登录成功，跳转到对应首页
-                if (selectedRole === 'child') {
-                    window.location.href = '/child/home';
-                } else {
-                    window.location.href = '/parent/dashboard';
-                }
+                // 登录成功，根据返回的 redirect_url 跳转
+                window.location.href = data.data.redirect_url;
             } else {
                 errorDiv.textContent = data.message;
                 errorDiv.style.display = 'block';

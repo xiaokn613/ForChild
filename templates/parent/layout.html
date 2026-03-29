@@ -280,9 +280,8 @@
             </ul>
             
             <div class="user-info">
-                <img src="https://ui-avatars.com/api/?name={{ session.get('username', 'User') }}&background=random" alt="用户头像">
                 <span>{{ session.get('username', '用户') }}</span>
-                <a href="/logout" style="color: white; margin-left: 15px; text-decoration: none;">
+                <a href="/api/logout" style="color: white; margin-left: 15px; text-decoration: none;">
                     <i class="fas fa-sign-out-alt"></i> 退出
                 </a>
             </div>

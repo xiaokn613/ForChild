@@ -102,15 +102,23 @@ def shop():
         WHERE u.id = ?
     ''', (session['user_id'],)).fetchone()
     
+    # 获取商城物品
     items = conn.execute('''
         SELECT * FROM shop_items 
         WHERE is_active = 1 
         ORDER BY category, price_stars
     ''').fetchall()
     
+    # 获取可领养的宠物
+    pets = conn.execute('''
+        SELECT * FROM pet_store 
+        WHERE is_active = 1 
+        ORDER BY adoption_fee DESC
+    ''').fetchall()
+    
     conn.close()
     
-    return render_template('child/shop.html', child=child, items=items)
+    return render_template('child/shop.html', child=child, items=items, pets=pets)
 
 @bp.route('/badges')
 def badges():

@@ -14,7 +14,7 @@ import json
 
 # 导入数据库模型
 from models import init_db, get_db_connection
-from routes import child_routes, parent_routes, api_routes
+from routes import child_routes, parent_routes, api_routes, pet_store_api
 
 def create_app():
     app = Flask(__name__)
@@ -49,6 +49,7 @@ def create_app():
     app.register_blueprint(child_routes.bp, url_prefix='/child')
     app.register_blueprint(parent_routes.bp, url_prefix='/parent')
     app.register_blueprint(api_routes.bp, url_prefix='/api')
+    app.register_blueprint(pet_store_api.bp)
     
     # 首页重定向到登录页
     @app.route('/')
