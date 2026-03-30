@@ -1,31 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="feat(shop): 实现商城管理和字典管理功能&#10;&#10;- 添加商城商品的增删改查功能，包括图片上传和展示&#10;- 实现商品上下架状态切换功能&#10;- 新增字典管理模块，支持字典项的增删改查&#10;- 重构商品数据模型，移除effect_value字段，添加real_price实际金额字段&#10;- 实现商品类别的字典管理，支持动态类别配置&#10;- 添加文件上传配置和限制，支持图片文件上传&#10;- 更新前端界面，展示商品图片和实际金额信息&#10;- 实现商品编辑时的图片替换和保留功能&#10;- 完善权限验证，确保只有家长角色可以访问相关功能">
-      <change afterPath="$PROJECT_DIR$/UI-design/feedback.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UI-design/feedback2.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/UI-design/outtime.html" afterDir="false" />
+    <list default="true" id="639776df-80fd-4065-922a-b3a19f485c61" name="更改" comment="chore(dependencies): 更新项目依赖配置并添加Bootstrap样式文件&#10;&#10;- 添加zrender库的eslint配置和忽略规则&#10;- 更新package-lock.json中的依赖版本信息&#10;- 添加Bootstrap的警告、徽章、边框、按钮等相关样式组件&#10;- 集成Bootstrap的断点、边框半径、阴影等混合样式功能&#10;- 添加Bootstrap的面包屑、按钮组、卡片等UI组件样式&#10;- 配置Bootstrap的工具类样式包括对齐、背景色、边框等">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/add_indexes.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/copy_local_resources.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/forchild.db" beforeDir="false" afterPath="$PROJECT_DIR$/forchild.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/prd.md" beforeDir="false" afterPath="$PROJECT_DIR$/prd.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/api_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/child_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/child_routes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/parent_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/parent_routes.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/child/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/child/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/child/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/child/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/child/shop.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/child/shop.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/dictionaries.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/dictionaries.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/layout.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/layout.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/login.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/pets.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/pets.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/shop.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/shop.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/parent/tasks.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/parent/tasks.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_dictionary.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +86,8 @@
       <workItem from="1774543749401" duration="59000" />
       <workItem from="1774617278668" duration="1949000" />
       <workItem from="1774707620159" duration="5649000" />
-      <workItem from="1774780018532" duration="16619000" />
+      <workItem from="1774780018532" duration="18310000" />
+      <workItem from="1774877712275" duration="3032000" />
     </task>
     <task id="LOCAL-00001" summary="项目初始化">
       <option name="closed" value="true" />
@@ -165,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1774617346684</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="chore(dependencies): 更新项目依赖配置并添加Bootstrap样式文件&#10;&#10;- 添加zrender库的eslint配置和忽略规则&#10;- 更新package-lock.json中的依赖版本信息&#10;- 添加Bootstrap的警告、徽章、边框、按钮等相关样式组件&#10;- 集成Bootstrap的断点、边框半径、阴影等混合样式功能&#10;- 添加Bootstrap的面包屑、按钮组、卡片等UI组件样式&#10;- 配置Bootstrap的工具类样式包括对齐、背景色、边框等">
+      <option name="closed" value="true" />
+      <created>1774804526058</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1774804526058</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -187,6 +175,7 @@
     <MESSAGE value="feat(demo): 添加宠物管理系统演示页面&#10;&#10;- 创建首页展示界面，包含用户信息、每日任务和愿望单功能&#10;- 实现宠物详情页面，展示宠物状态、成长进度和互动功能&#10;- 开发宠物商店页面，提供不同宠物的领养选择&#10;- 设计响应式布局适配iPad设备显示&#10;- 集成星星积分系统用于宠物喂养和互动操作" />
     <MESSAGE value="feat(task): 优化任务模板查询性能并增加奖励字段显示&#10;&#10;- 使用 LEFT JOIN 替代 JOIN 提高查询效率&#10;- 手动转换查询结果为字典列表提升数据处理性能&#10;- 在 models.py 中为 task_templates 表创建多个索引优化查询&#10;- 在任务列表页面增加奖励星星、徽章、奖杯字段显示&#10;- 实现任务列表前端排序功能支持多字段排序&#10;- 添加本地依赖包配置到 package.json&#10;- 更新 PRD 文档增加商场管理功能规划&#10;- 优化前端资源加载使用本地文件替代 CDN&#10;- 实现 ECharts 图表组件的异步加载和错误回退机制" />
     <MESSAGE value="feat(shop): 实现商城管理和字典管理功能&#10;&#10;- 添加商城商品的增删改查功能，包括图片上传和展示&#10;- 实现商品上下架状态切换功能&#10;- 新增字典管理模块，支持字典项的增删改查&#10;- 重构商品数据模型，移除effect_value字段，添加real_price实际金额字段&#10;- 实现商品类别的字典管理，支持动态类别配置&#10;- 添加文件上传配置和限制，支持图片文件上传&#10;- 更新前端界面，展示商品图片和实际金额信息&#10;- 实现商品编辑时的图片替换和保留功能&#10;- 完善权限验证，确保只有家长角色可以访问相关功能" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(shop): 实现商城管理和字典管理功能&#10;&#10;- 添加商城商品的增删改查功能，包括图片上传和展示&#10;- 实现商品上下架状态切换功能&#10;- 新增字典管理模块，支持字典项的增删改查&#10;- 重构商品数据模型，移除effect_value字段，添加real_price实际金额字段&#10;- 实现商品类别的字典管理，支持动态类别配置&#10;- 添加文件上传配置和限制，支持图片文件上传&#10;- 更新前端界面，展示商品图片和实际金额信息&#10;- 实现商品编辑时的图片替换和保留功能&#10;- 完善权限验证，确保只有家长角色可以访问相关功能" />
+    <MESSAGE value="chore(dependencies): 更新项目依赖配置并添加Bootstrap样式文件&#10;&#10;- 添加zrender库的eslint配置和忽略规则&#10;- 更新package-lock.json中的依赖版本信息&#10;- 添加Bootstrap的警告、徽章、边框、按钮等相关样式组件&#10;- 集成Bootstrap的断点、边框半径、阴影等混合样式功能&#10;- 添加Bootstrap的面包屑、按钮组、卡片等UI组件样式&#10;- 配置Bootstrap的工具类样式包括对齐、背景色、边框等" />
+    <option name="LAST_COMMIT_MESSAGE" value="chore(dependencies): 更新项目依赖配置并添加Bootstrap样式文件&#10;&#10;- 添加zrender库的eslint配置和忽略规则&#10;- 更新package-lock.json中的依赖版本信息&#10;- 添加Bootstrap的警告、徽章、边框、按钮等相关样式组件&#10;- 集成Bootstrap的断点、边框半径、阴影等混合样式功能&#10;- 添加Bootstrap的面包屑、按钮组、卡片等UI组件样式&#10;- 配置Bootstrap的工具类样式包括对齐、背景色、边框等" />
   </component>
 </project>
