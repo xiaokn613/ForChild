@@ -77,8 +77,8 @@ def start_server():
         print("🛑 按 Ctrl+C 停止服务")
         print("=" * 60 + "\n")
         
-        # 启动 Flask 应用
-        app.run(host='0.0.0.0', port=28080, debug=False)
+        # 启动 Flask 应用（启用调试模式，支持热更新）
+        app.run(host='0.0.0.0', port=28080, debug=True)
     except KeyboardInterrupt:
         print("\n\n👋 服务器已停止")
     except Exception as e:
